@@ -2204,18 +2204,15 @@ async function generateAIClass(subject) {
         `;
 
 
-    try {
+        try {
 
         const {
             data,
             error
-        } = await supabaseClient.functions.invoke(
-
+        } = await supabaseClient.functions.invoke();
             'generate-class',
-
             {
                 body: {
-
                     childName:
                         child.name,
 
@@ -2230,11 +2227,9 @@ async function generateAIClass(subject) {
                         child.curriculum
                             ?.subjects
                             ?.join(', ') || ''
-
                 }
             }
-
-        );
+    );
 
 
         if (error) {
@@ -2388,26 +2383,49 @@ function backToSubjects() {
 // ========================================================
 // 5. START PRACTICE
 // ========================================================
-
 function startAIQuiz() {
 
+    // Make sure a subject was selected
     if (!selectedAISubject) {
 
-        showToast('📚 Please choose a subject first!');
+        showToast(
+            '📚 Please choose a subject first!'
+        );
 
         return;
+    }
+
+
+    // Generate the practice question
+    generateNewQuestion();
+
+
+    // Find the practice quiz section
+    const quiz =
+        document.getElementById(
+            'practice-quiz'
+        );
+
+
+    // Scroll to the practice quiz
+    if (quiz) {
+
+        setTimeout(() => {
+
+            quiz.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+        }, 100);
 
     }
 
 
+    // Tell the child the practice is ready
     showToast(
-        `🤖 Kiko is preparing your ${selectedAISubject} challenge!`
+        `🎮 Your ${selectedAISubject} practice is ready!`
     );
-
-
-    // Use existing quiz system
-    generateNewQuestion();
-
 }
 
 
