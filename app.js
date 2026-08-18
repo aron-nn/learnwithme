@@ -9,9 +9,7 @@ const GRADES = [
     { id: 'ukg', emoji: '🎒', label: 'UKG', age: '5-6 years', desc: 'Pre-math & word matching' },
     { id: '1', emoji: '1️⃣', label: 'Class 1', age: '6-7 years', desc: 'Addition, reading & shapes' },
     { id: '2', emoji: '2️⃣', label: 'Class 2', age: '7-8 years', desc: 'Multiplication & nature science' },
-    { id: '3', emoji: '3️⃣', label: 'Class 3', age: '8-9 years', desc: 'Fractions & Science basics' },
-    { id: '4', emoji: '4️⃣', label: 'Class 4', age: '9-10 years', desc: 'Complex math & Geography' },
-    { id: '5', emoji: '5️⃣', label: 'Class 5', age: '10-11 years', desc: 'Decimals, History & Logic' }
+    { id: '3', emoji: '3️⃣', label: 'Class 3', age: '8-9 years', desc: 'Fractions & Science basics' }
 ];
 
 const PRESET_INTERESTS = [
@@ -521,9 +519,9 @@ function useStreakFreeze(childId) {
 }
 
 // ==========================================
-// FEATURE 3: EXTENDED GRADES (LKG, UKG, Class 1-5)
+// FEATURE 3: EXTENDED GRADES (LKG, UKG, Class 1-3)
 // ==========================================
-function renderGradeSelectOptions(targetSelectId, selectedValue = 'Class 4') {
+function renderGradeSelectOptions(targetSelectId, selectedValue = 'Class 3') {
     const select = document.getElementById(targetSelectId);
     if (!select) return;
 
@@ -538,7 +536,7 @@ function renderGradeSelectOptions(targetSelectId, selectedValue = 'Class 4') {
 // FEATURE 5: INTEREST SELECTION DURING SIGNUP
 // ==========================================
 function initInterestSelector() {
-    renderGradeSelectOptions('signup-grade', 'Class 4');
+    renderGradeSelectOptions('signup-grade', 'Class 3');
 
     const dropdown = document.getElementById('preset-interest-dropdown');
     if (dropdown) {
