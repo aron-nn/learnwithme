@@ -363,6 +363,84 @@
         <!-- KID WORLD VIEW                             -->
         <!-- ========================================== -->
         <div id="portal-kid" class="hidden space-y-8 bg-dots-pattern p-2 sm:p-4 rounded-3xl">
+                <!-- =====================================================
+                AI SUBJECT SELECTION
+                INSERT AFTER LINE 365
+                ===================================================== -->
+
+            <div id="kid-subject-selection"
+                class="bg-white rounded-3xl border-4 border-yellow-300 p-6 md:p-8 shadow-md">
+
+                <div class="text-center mb-6">
+
+                    <div class="text-5xl mb-3">🎓</div>
+
+                    <h2 class="font-bouncy text-3xl md:text-4xl font-extrabold text-slate-900">
+                        What do you want to learn today?
+                    </h2>
+
+                    <p class="font-child text-slate-500 font-bold mt-2">
+                        Pick a subject and Kiko will create a class just for you! 🤖✨
+                    </p>
+
+                </div>
+
+                <div id="kid-subject-buttons"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                    <!-- Subjects are added automatically by JavaScript -->
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                AI GENERATED CLASS
+                ===================================================== -->
+
+            <div id="ai-class-container"
+                class="hidden bg-white rounded-3xl border-4 border-blue-400 p-6 md:p-8 shadow-md">
+
+                <div class="flex items-center justify-between mb-6">
+
+                    <div>
+
+                        <span class="text-xs font-bold text-blue-500 uppercase">
+                            🤖 Kiko AI Class
+                        </span>
+
+                        <h2 id="ai-class-title"
+                            class="font-bouncy text-3xl font-extrabold text-slate-900">
+                            Your Personalized Class
+                        </h2>
+
+                    </div>
+
+                    <button onclick="backToSubjects()"
+                            class="px-4 py-2 bg-slate-100 rounded-xl font-bold">
+                        ← Subjects
+                    </button>
+
+                </div>
+
+                <div id="ai-class-content"
+                    class="font-child text-slate-700 leading-relaxed">
+
+                    <!-- AI generated lesson appears here -->
+
+                </div>
+
+                <div class="mt-8">
+
+                    <button onclick="startAIQuiz()"
+                            class="w-full px-6 py-4 bg-blue-500 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition">
+                        🎮 Start Practice
+                    </button>
+
+                </div>
+
+            </div>
             <!-- Animated Mascot Hero Banner -->
             <div class="bg-gradient-to-r from-yellow-300 via-kid-coral to-kid-purple rounded-3xl p-6 md:p-8 text-white shadow-lg border-4 border-white relative overflow-hidden kid-card">
                 <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">

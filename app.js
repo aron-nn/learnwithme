@@ -1155,7 +1155,347 @@ function initCharts() {
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { max: 100, beginAtZero: true } } }
         });
     }
+}// ========================================================
+// KIKO AI SUBJECT SELECTION
+// INSERT AFTER LINE 1153
+// ========================================================
+
+let selectedAISubject = null;
+
+
+// ========================================================
+// 1. OPEN SUBJECT SELECTION
+// ========================================================
+
+function openChildLearning() {
+
+    const child = getActiveChild();
+
+    if (!child) return;
+
+    const subjectContainer =
+        document.getElementById('kid-subject-buttons');
+
+    if (!subjectContainer) return;
+
+
+    // Get subjects from child's curriculum
+    let subjects = [];
+
+    if (
+        child.curriculum &&
+        child.curriculum.hasCurriculum &&
+        child.curriculum.subjects &&
+        child.curriculum.subjects.length > 0
+    ) {
+
+        subjects = child.curriculum.subjects;
+
+    } else {
+
+        // Default subjects
+        subjects = [
+            'Mathematics',
+            'Science',
+            'English',
+            'EVS'
+        ];
+
+    }
+
+
+    // Subject icons
+    const subjectIcons = {
+
+        'Mathematics': '📐',
+        'Math': '📐',
+
+        'Science': '🔬',
+
+        'English': '📖',
+
+        'EVS': '🌱',
+
+        'Social Science': '🌍',
+
+        'Computer Science': '💻'
+
+    };
+
+
+    // Create subject buttons
+    subjectContainer.innerHTML = subjects.map(subject => {
+
+        const cleanSubject =
+            subject
+                .replace(/\(.*?\)/g, '')
+                .trim();
+
+
+        let icon = '📚';
+
+
+        for (const key in subjectIcons) {
+
+            if (
+                cleanSubject
+                    .toLowerCase()
+                    .includes(key.toLowerCase())
+            ) {
+
+                icon = subjectIcons[key];
+
+                break;
+
+            }
+
+        }
+
+
+        return `
+
+            <button
+                onclick="selectAISubject('${cleanSubject.replace(/'/g, "\\'")}')"
+                class="p-6 bg-gradient-to-br from-yellow-50 to-white
+                       border-4 border-yellow-200 rounded-3xl
+                       hover:border-blue-400 hover:scale-105
+                       transition-all duration-200
+                       text-center shadow-sm">
+
+                <div class="text-5xl mb-3">
+                    ${icon}
+                </div>
+
+                <h3 class="font-bouncy text-xl font-extrabold text-slate-900">
+                    ${cleanSubject}
+                </h3>
+
+                <p class="font-child text-xs font-bold text-slate-500 mt-2">
+                    Learn with Kiko AI ✨
+                </p>
+
+            </button>
+
+        `;
+
+    }).join('');
+
+
+    // Show subject selection
+    document
+        .getElementById('kid-subject-selection')
+        .classList.remove('hidden');
+
+
+    // Hide AI class
+    document
+        .getElementById('ai-class-container')
+        .classList.add('hidden');
+
 }
+
+
+// ========================================================
+// 2. SUBJECT SELECTED
+// ========================================================
+
+function selectAISubject(subject) {
+
+    selectedAISubject = subject;
+
+
+    // Hide subjects
+    document
+        .getElementById('kid-subject-selection')
+        .classList.add('hidden');
+
+
+    // Show AI class
+    document
+        .getElementById('ai-class-container')
+        .classList.remove('hidden');
+
+
+    // Generate class
+    generateAIClass(subject);
+
+}
+
+
+// ========================================================
+// 3. GENERATE PERSONALIZED AI CLASS
+// ========================================================
+
+function generateAIClass(subject) {
+
+    const child = getActiveChild();
+
+    if (!child) return;
+
+
+    // Get child's interests
+    const interest =
+        child.interests &&
+        child.interests.length > 0
+            ? child.interests[0]
+            : 'games';
+
+
+    // Get child's class
+    const grade =
+        child.grade || 'your class';
+
+
+    // Update title
+    document
+        .getElementById('ai-class-title')
+        .textContent =
+        `${subject} Adventure with ${interest}!`;
+
+
+    // Temporary personalized lesson
+    // This can later be replaced by your LLM API.
+
+    document
+        .getElementById('ai-class-content')
+        .innerHTML = `
+
+            <div class="space-y-5">
+
+
+                <div class="bg-blue-50 p-5 rounded-2xl">
+
+                    <h3 class="text-2xl font-bold mb-2">
+                        🎓 Today's Mission
+                    </h3>
+
+                    <p>
+                        Welcome to your ${subject} adventure!
+                    </p>
+
+                    <p class="mt-2">
+
+                        Kiko knows that you like
+                        <strong>${interest}</strong>.
+
+                    </p>
+
+                </div>
+
+
+                <div class="bg-yellow-50 p-5 rounded-2xl">
+
+                    <h3 class="text-xl font-bold mb-2">
+                        ⭐ Let's Learn
+                    </h3>
+
+                    <p>
+
+                        Today, we are going to learn
+                        <strong>${subject}</strong>
+                        using examples related to
+                        <strong>${interest}</strong>.
+
+                    </p>
+
+                </div>
+
+
+                <div class="bg-emerald-50 p-5 rounded-2xl">
+
+                    <h3 class="text-xl font-bold mb-2">
+                        🧠 Your Challenge
+                    </h3>
+
+                    <p>
+
+                        Get ready for an interactive
+                        ${subject} challenge designed
+                        especially for ${grade} students!
+
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        `;
+
+}
+
+
+// ========================================================
+// 4. BACK TO SUBJECTS
+// ========================================================
+
+function backToSubjects() {
+
+    document
+        .getElementById('ai-class-container')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('kid-subject-selection')
+        .classList.remove('hidden');
+
+}
+
+
+// ========================================================
+// 5. START PRACTICE
+// ========================================================
+
+function startAIQuiz() {
+
+    if (!selectedAISubject) {
+
+        showToast('📚 Please choose a subject first!');
+
+        return;
+
+    }
+
+
+    showToast(
+        `🤖 Kiko is preparing your ${selectedAISubject} challenge!`
+    );
+
+
+    // Use existing quiz system
+    generateNewQuestion();
+
+}
+
+
+// ========================================================
+// 6. OPEN SUBJECT SELECTION WHEN KID WORLD OPENS
+// ========================================================
+
+const originalSwitchPortalForAI =
+    window.switchPortal;
+
+
+window.switchPortal = function(portal) {
+
+    // Keep your existing switchPortal functionality
+    originalSwitchPortalForAI(portal);
+
+
+    // If Kid World is selected
+    if (portal === 'kid') {
+
+        setTimeout(function() {
+
+            openChildLearning();
+
+        }, 100);
+
+    }
+
+};
+
 // ==========================================
 // PORTAL BUTTON VISIBILITY
 // ==========================================
