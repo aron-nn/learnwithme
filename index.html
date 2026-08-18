@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnWithMe - Playful AI Learning & Auth Portal</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#3B82F6',
+                            purple: '#8B5CF6',
+                            green: '#10B981',
+                            amber: '#F59E0B',
+                            rose: '#F43F5E',
+                            dark: '#0F172A',
+                            softBg: '#F8FAFC'
+                        },
+                        kid: {
+                            yellow: '#FFD166',
+                            coral: '#FF6B6B',
+                            teal: '#4ECDC4',
+                            purple: '#9B51E0',
+                            lime: '#A8E6CF',
+                            pink: '#FF8B94',
+                            sky: '#A8DADC'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        child: ['Fredoka', 'cursive'],
+                        bouncy: ['Sniglet', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-amber-50/40 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- ========================================== -->
+    <!-- AUTHENTICATION & ONBOARDING CONTAINER      -->
+    <!-- ========================================== -->
+    <div id="auth-container" class="fixed inset-0 z-50 bg-gradient-to-br from-amber-100 via-sky-100 to-purple-100 flex items-center justify-center p-4 overflow-y-auto">
+        
+        <!-- STEP 1: CHILD SIGN-UP SCREEN -->
+        <div id="auth-step-signup" class="max-w-lg w-full bg-white rounded-3xl border-4 border-yellow-300 p-6 sm:p-8 shadow-2xl space-y-6 relative kid-card my-auto">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-gradient-to-tr from-yellow-400 to-kid-coral rounded-3xl flex items-center justify-center text-white font-bouncy text-4xl shadow-md mx-auto animate-wiggle border-4 border-white">
+                    🚀
+                </div>
+                <h1 class="font-bouncy text-3xl font-extrabold text-slate-900">Welcome to Learn<span class="text-kid-coral">With</span><span class="text-brand-blue">Me!</span></h1>
+                <p class="font-child text-sm font-bold text-amber-800">Sign Up Your Child & Customize Learning</p>
+            </div>
+
+            <form onsubmit="handleChildSignUp(event)" class="space-y-4">
+                <div>
+                    <label class="block font-child font-bold text-xs text-slate-700 uppercase tracking-wider mb-1">Child's Name 👧👦</label>
+                    <input type="text" id="signup-name" required placeholder="e.g. Arjun Sharma" class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-brand-blue focus:outline-none font-bold text-sm">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-child font-bold text-xs text-slate-700 uppercase tracking-wider mb-1">Grade / Class 🎒</label>
+                        <select id="signup-grade" class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-brand-blue focus:outline-none font-bold text-sm">
+                            <!-- Populated dynamically via app.js -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-child font-bold text-xs text-slate-700 uppercase tracking-wider mb-1">School Board 🏫</label>
+                        <select id="signup-board" class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-brand-blue focus:outline-none font-bold text-sm">
+                            <option>CBSE</option>
+                            <option>ICSE</option>
+                            <option>IB</option>
+                            <option>State Board</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- FEATURE 5: INTEREST SELECTION DURING SIGNUP -->
+                <div class="space-y-2 bg-amber-50/80 p-4 rounded-2xl border-2 border-amber-200">
+                    <div class="flex items-center justify-between">
+                        <label class="block font-child font-bold text-xs text-slate-800 uppercase tracking-wider">What do you love? 🎨</label>
+                        <span id="selected-interests-count" class="text-xs font-bold text-brand-blue">0/3 selected</span>
+                    </div>
+
+                    <select id="preset-interest-dropdown" onchange="handlePresetInterestSelect(event)" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-brand-blue focus:outline-none font-bold text-xs bg-white">
+                        <!-- Populated via app.js -->
+                    </select>
+
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="custom-interest-input" placeholder="Or type custom interest (e.g. Trains)" class="flex-1 px-3 py-2 rounded-xl border-2 border-slate-200 font-bold text-xs focus:outline-none">
+                        <button type="button" onclick="addCustomInterest()" class="px-3 py-2 bg-amber-500 text-white rounded-xl font-child font-bold text-xs shadow-sm hover:bg-amber-600">+ Add</button>
+                    </div>
+
+                    <!-- Selected Interest Tag Pills -->
+                    <div id="selected-interests-tags" class="flex flex-wrap gap-1.5 pt-1">
+                        <!-- Rendered via app.js -->
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-brand-blue hover:bg-blue-600 text-white font-child font-bold text-lg rounded-2xl shadow-md transition-all flex items-center justify-center space-x-2 kid-btn-blue">
+                    <span>Create Account & Generate Code</span>
+                    <span>✨</span>
+                </button>
+            </form>
+
+            <div class="text-center pt-2 border-t border-slate-100">
+                <button onclick="showAuthStep('login-select')" class="text-xs font-bold text-brand-purple hover:underline">
+                    Already registered? Go to Login Screen →
+                </button>
+            </div>
+        </div>
+
+        <!-- GENERATED CODE CONFIRMATION MODAL STATE -->
+        <div id="auth-step-code-generated" class="hidden max-w-md w-full bg-white rounded-3xl border-4 border-emerald-400 p-8 shadow-2xl text-center space-y-6 relative kid-card my-auto">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-sm">
+                🎉
+            </div>
+            <div>
+                <h2 class="font-bouncy text-2xl font-extrabold text-slate-900">Child Account Created!</h2>
+                <p class="font-child text-xs font-bold text-slate-500 mt-1">Here is the secret student code generated for your child:</p>
+            </div>
+
+            <div class="bg-amber-100/80 p-4 rounded-2xl border-2 border-amber-300 font-mono font-extrabold text-2xl text-brand-blue tracking-widest select-all">
+                <span id="generated-code-display">ARJ-2026-X8</span>
+            </div>
+
+            <p class="text-xs text-amber-800 font-bold bg-amber-50 p-3 rounded-xl border border-amber-200">
+                ⚠️ Parents will need this code to log into the Parent Portal and view learning progress.
+            </p>
+
+            <button onclick="showAuthStep('login-select')" class="w-full py-3.5 bg-brand-green text-white font-child font-bold rounded-2xl shadow-md kid-btn-teal">
+                Proceed to Login Screen →
+            </button>
+        </div>
+
+        <!-- STEP 2: LOGIN PORTAL SELECTION (PARENTS vs CHILDREN) -->
+        <div id="auth-step-login-select" class="hidden max-w-xl w-full bg-white rounded-3xl border-4 border-yellow-300 p-8 shadow-2xl space-y-8 relative kid-card my-auto">
+            <div class="text-center space-y-2">
+                <h2 class="font-bouncy text-3xl font-extrabold text-slate-900">Who is logging in today?</h2>
+                <p class="font-child text-xs font-bold text-slate-500">Select your account type to proceed</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Select Parent -->
+                <button onclick="showAuthStep('parent-code')" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-brand-blue hover:bg-blue-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card">
+                    <div class="w-20 h-20 bg-blue-100 text-brand-blue rounded-3xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-sm">
+                        👨‍👩‍👧
+                    </div>
+                    <div>
+                        <h3 class="font-child font-extrabold text-xl text-slate-900">Parent Login</h3>
+                        <p class="text-xs font-bold text-slate-400 mt-1">Requires Student Code</p>
+                    </div>
+                    <span class="px-4 py-1.5 rounded-xl bg-blue-100 text-brand-blue text-xs font-bold">Enter Code →</span>
+                </button>
+
+                <!-- Select Child -->
+                <button onclick="loginAsChild()" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-kid-coral hover:bg-rose-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card">
+                    <div class="w-20 h-20 bg-rose-100 text-kid-coral rounded-3xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-sm">
+                        🎈
+                    </div>
+                    <div>
+                        <h3 class="font-child font-extrabold text-xl text-slate-900">Kid World!</h3>
+                        <p class="text-xs font-bold text-slate-400 mt-1">Direct Kid Play Access</p>
+                    </div>
+                    <span class="px-4 py-1.5 rounded-xl bg-rose-100 text-kid-coral text-xs font-bold">Start Learning →</span>
+                </button>
+            </div>
+
+            <div class="text-center border-t border-slate-100 pt-4">
+                <button onclick="showAuthStep('signup')" class="text-xs font-bold text-slate-500 hover:text-slate-800">
+                    Need to register another child? <span class="text-brand-blue">Sign Up Here</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: PARENT STUDENT-CODE LOGIN VERIFICATION -->
+        <div id="auth-step-parent-code" class="hidden max-w-md w-full bg-white rounded-3xl border-4 border-brand-blue p-8 shadow-2xl space-y-6 relative kid-card my-auto">
+            <button onclick="showAuthStep('login-select')" class="text-xs font-bold text-slate-400 hover:text-slate-700 flex items-center space-x-1">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Back to Selection</span>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-blue-100 text-brand-blue rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-sm">
+                    🔐
+                </div>
+                <h2 class="font-bouncy text-2xl font-extrabold text-slate-900">Parent Access Verification</h2>
+                <p class="font-child text-xs font-bold text-slate-500">Enter your child's unique student code (e.g. ARJ-2026-X8 or ANA-2026-K3).</p>
+            </div>
+
+            <form onsubmit="handleParentLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block font-child font-bold text-xs text-slate-700 uppercase tracking-wider mb-1">Child's Student Code</label>
+                    <input type="text" id="parent-code-input" required placeholder="e.g. ARJ-2026-X8" class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 text-center font-mono text-xl uppercase tracking-widest font-extrabold focus:border-brand-blue focus:outline-none">
+                </div>
+
+                <div id="parent-login-error" class="hidden text-xs text-rose-600 bg-rose-50 p-2.5 rounded-xl text-center font-bold">
+                    Invalid code! Try using "ARJ-2026-X8" or "ANA-2026-K3"
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-brand-blue hover:bg-blue-600 text-white font-child font-bold text-base rounded-2xl shadow-md kid-btn-blue">
+                    Verify Code & Access Portal 🔓
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TOP NAVIGATION BAR                         -->
+    <!-- ========================================== -->
+    <header class="bg-white border-b-4 border-amber-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-22 flex items-center justify-between py-3">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchPortal('parent')">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-amber-400 via-kid-coral to-kid-purple rounded-3xl flex items-center justify-center text-white font-child font-bold text-2xl sm:text-3xl shadow-md border-4 border-white animate-wiggle">
+                    🚀
+                </div>
+                <div>
+                    <span class="font-bouncy text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-wide">Learn<span class="text-kid-coral">With</span><span class="text-brand-blue">Me!</span></span>
+                    <span class="hidden sm:block text-xs font-child font-semibold text-amber-600">✨ AI Playful School Companion</span>
+                </div>
+            </div>
+
+            <!-- Header Widgets & Actions -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <!-- Stars Counter -->
+                <div class="hidden md:flex items-center space-x-2 bg-yellow-100 border-2 border-yellow-300 px-3 py-1.5 rounded-full shadow-sm font-child font-bold text-yellow-800 text-xs sm:text-sm">
+                    <span class="text-lg">⭐</span>
+                    <span id="global-star-count">1,240 Stars</span>
+                </div>
+
+                <!-- FEATURE 1: Screen Time Tracker Widget -->
+                <div id="screen-time-widget-container">
+                    <!-- Rendered via app.js -->
+                </div>
+
+                <!-- FEATURE 2: Login Streak Widget -->
+                <div id="streak-widget-container">
+                    <!-- Rendered via app.js -->
+                </div>
+
+                <!-- Portal Switcher -->
+                <div class="bg-slate-100 p-1.5 rounded-3xl flex items-center space-x-1 border-2 border-slate-200">
+                    <button id="btn-portal-parent" onclick="switchPortal('parent')" class="px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all duration-200 bg-white text-slate-900 shadow-sm flex items-center space-x-1.5">
+                        <i data-lucide="shield" class="w-4 h-4 text-brand-blue"></i>
+                        <span class="hidden sm:inline">Parent Portal</span>
+                    </button>
+                    <button id="btn-portal-kid" onclick="switchPortal('kid')" class="px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm font-child font-bold transition-all duration-200 text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+                        <span class="text-base sm:text-lg">🎈</span>
+                        <span class="text-kid-coral text-xs sm:text-base font-extrabold">Kid World!</span>
+                    </button>
+                </div>
+
+                <!-- Sign Out -->
+                <button onclick="logout()" class="p-2 rounded-2xl bg-slate-100 text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200" title="Sign Out">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- MAIN APPLICATION PORTAL                    -->
+    <!-- ========================================== -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+        <!-- ========================================== -->
+        <!-- PARENT PORTAL VIEW                         -->
+        <!-- ========================================== -->
+        <div id="portal-parent" class="space-y-8">
+            <!-- Multi-Child Switching Tab Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b-2 border-amber-200/60 pb-4">
+                <div id="parent-child-tabs-container" class="flex items-center space-x-3 overflow-x-auto pb-2 sm:pb-0 custom-scrollbar">
+                    <!-- Rendered dynamically via app.js -->
+                </div>
+
+                <div class="flex items-center space-x-2 bg-yellow-100/80 px-4 py-2 rounded-2xl border border-yellow-300 text-xs font-bold text-amber-900 shadow-sm">
+                    <span class="text-base">🎒</span>
+                    <span>Student Code: <strong id="active-student-code" class="text-brand-blue font-mono text-sm">ARJ-2026-X8</strong></span>
+                </div>
+            </div>
+
+            <!-- Active Child Metadata Banner -->
+            <div class="bg-white rounded-3xl border-2 border-amber-200 p-6 md:p-8 shadow-sm relative overflow-hidden">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900" id="display-child-name">Arjun Sharma</h1>
+                            <span id="display-child-meta" class="bg-blue-100 text-brand-blue text-xs font-bold px-3 py-1 rounded-full border border-blue-300">Class 4 • CBSE</span>
+                        </div>
+                        <p class="text-slate-500 text-sm">Managing AI curriculum generators, screen time limits & achievement stickers</p>
+                    </div>
+
+                    <!-- Screen Time Parent Extensions Control -->
+                    <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 space-y-2">
+                        <span class="block text-xs font-bold text-amber-900 uppercase tracking-wider">Parent Screen Time Control</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="parentExtendScreenTime(state.activeChildId, 15)" class="px-3 py-1.5 bg-brand-blue text-white font-bold text-xs rounded-xl shadow-sm hover:bg-blue-600">+15m</button>
+                            <button onclick="parentExtendScreenTime(state.activeChildId, 30)" class="px-3 py-1.5 bg-brand-purple text-white font-bold text-xs rounded-xl shadow-sm hover:bg-purple-600">+30m</button>
+                            <button onclick="parentExtendScreenTime(state.activeChildId, 60)" class="px-3 py-1.5 bg-brand-green text-white font-bold text-xs rounded-xl shadow-sm hover:bg-emerald-600">+1 Hour</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FEATURE 4: CURRICULUM UPLOAD PER CHILD -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                        <span>📚</span>
+                        <span>School Curriculum per Child</span>
+                    </h2>
+                </div>
+
+                <div id="curriculum-display-area">
+                    <!-- Rendered dynamically via app.js -->
+                </div>
+            </div>
+
+            <!-- ANALYTICS SECTION -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">Curriculum Coverage</h3>
+                        <p class="text-xs text-slate-500 mb-4">Mastered vs In-Progress Topics</p>
+                        <div class="relative h-48 w-full flex items-center justify-center">
+                            <canvas id="coverageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">Subject Mastery & AI Focus</h3>
+                        <p class="text-xs text-slate-500 mb-4">Real-time performance across subject areas</p>
+                        <div class="h-52 w-full">
+                            <canvas id="subjectBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- KID WORLD VIEW                             -->
+        <!-- ========================================== -->
+        <div id="portal-kid" class="hidden space-y-8 bg-dots-pattern p-2 sm:p-4 rounded-3xl">
+            <!-- Animated Mascot Hero Banner -->
+            <div class="bg-gradient-to-r from-yellow-300 via-kid-coral to-kid-purple rounded-3xl p-6 md:p-8 text-white shadow-lg border-4 border-white relative overflow-hidden kid-card">
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="space-y-3 text-center md:text-left">
+                        <h1 id="kid-hero-title" class="font-bouncy text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide drop-shadow-md">
+                            Hi Arjun! Let's Play & Learn! 🦁
+                        </h1>
+                        <p id="kid-hero-subtitle" class="font-child text-base sm:text-lg text-white/95">
+                            Kiko prepared a new Cricket Quest from your <strong>Class 4 Math Syllabus</strong>!
+                        </p>
+                        <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
+                            <span class="text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1 rounded-full">Your Favorite Interests:</span>
+                            <span id="kid-interests-pill" class="text-xs font-bold bg-white text-slate-900 px-3 py-1 rounded-full shadow-sm">🏏 Cricket • 🚀 Space</span>
+                        </div>
+                    </div>
+                    <div class="shrink-0 text-center animate-float">
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-full border-4 border-yellow-300 flex items-center justify-center text-6xl sm:text-7xl shadow-xl mx-auto">
+                            🐰
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FEATURE 6: DAILY ACHIEVEMENT SYSTEM & QUIZ ARENA -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Daily Quota Tracker Card -->
+                <div class="bg-white rounded-3xl border-4 border-yellow-300 p-6 shadow-md space-y-4 kid-card">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="font-bouncy text-2xl font-extrabold text-slate-900 flex items-center space-x-2">
+                            <span>Today's Goal</span>
+                            <span>🎯</span>
+                        </h3>
+                        <span class="font-child font-extrabold text-lg text-brand-blue">
+                            <span id="daily-completed-count">7</span> / <span id="daily-total-count">10</span>
+                        </span>
+                    </div>
+
+                    <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden border-2 border-slate-200">
+                        <div id="daily-quota-progress-bar" class="bg-gradient-to-r from-yellow-400 to-amber-500 h-full transition-all duration-500" style="width: 70%"></div>
+                    </div>
+
+                    <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 flex items-center space-x-3">
+                        <span class="text-3xl animate-bounce">🎁</span>
+                        <p id="daily-quota-reward-text" class="font-child font-bold text-xs text-amber-900">
+                            Complete 3 more questions to earn today's sticker!
+                        </p>
+                    </div>
+
+                    <div class="text-center pt-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Today's Sticker Reward Preview:</span>
+                        <div class="p-3 bg-blue-50 rounded-2xl border-2 border-blue-200 inline-flex items-center space-x-3">
+                            <span class="text-3xl">🏏</span>
+                            <div class="text-left">
+                                <p class="font-child font-bold text-sm text-slate-900">Cricket Star</p>
+                                <span class="px-2 py-0.5 rounded-full bg-blue-500 text-white font-bold text-[10px]">RARE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Quiz Arena -->
+                <div class="lg:col-span-2 bg-white rounded-3xl border-4 border-brand-blue p-6 md:p-8 shadow-md space-y-6 kid-card">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <span id="quiz-question-title" class="font-child font-extrabold text-sm text-brand-blue uppercase tracking-wider">Question 8 of 10</span>
+                        <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-child font-bold text-xs border border-yellow-300">⭐ +10 Stars</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 id="quiz-question-text" class="font-child text-xl sm:text-2xl font-bold text-slate-900 leading-snug">
+                            Loading your interest question...
+                        </h3>
+                    </div>
+
+                    <!-- Answer Options -->
+                    <div id="quiz-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Populated via app.js -->
+                    </div>
+
+                    <!-- Feedback Box -->
+                    <div id="quiz-feedback-box" class="hidden">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- FEATURE 6: STICKER COLLECTION PAGE (ALBUM GRID) -->
+            <div class="space-y-6 bg-white p-6 sm:p-8 rounded-3xl border-4 border-amber-300 shadow-md">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-slate-100 pb-4">
+                    <div>
+                        <h2 class="font-bouncy text-3xl font-extrabold text-slate-900 flex items-center space-x-2">
+                            <span>My Sticker Collection</span>
+                            <span>📖</span>
+                        </h2>
+                        <p class="font-child text-xs font-bold text-slate-500 mt-1">Complete daily goals to unlock rare, epic, and legendary stickers!</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <span class="px-4 py-2 rounded-2xl bg-amber-100 text-amber-900 font-child font-bold text-xs border border-amber-300">
+                            🏆 3 Sets Complete
+                        </span>
+                        <span class="px-4 py-2 rounded-2xl bg-purple-100 text-purple-900 font-child font-bold text-xs border border-purple-300">
+                            🌟 Rarest: Galaxy Explorer 🚀
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Sticker Album Sets Grid -->
+                <div id="sticker-collection-sets-container" class="space-y-6">
+                    <!-- Rendered dynamically via app.js -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- MODALS OVERLAY CONTAINER                   -->
+    <!-- ========================================== -->
+
+    <!-- SCREEN TIME DETAIL MODAL -->
+    <div id="modal-screentime-detail" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-3xl border-4 border-amber-300 p-6 sm:p-8 shadow-2xl relative kid-card">
+            <button onclick="closeModal('modal-screentime-detail')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+            <div id="modal-screentime-detail-body">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE 1: SCREEN TIME WARNING MODAL (At 1h 45m) -->
+    <div id="modal-screentime-warning" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-3xl border-4 border-amber-400 p-8 shadow-2xl text-center space-y-6 relative kid-card">
+            <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center text-5xl mx-auto shadow-md animate-bounce">
+                😟
+            </div>
+            <div>
+                <h2 class="font-bouncy text-3xl font-extrabold text-slate-900">Time's Almost Up!</h2>
+                <p class="font-child text-sm font-bold text-slate-600 mt-2">
+                    You've been learning for 1 hour 45 minutes. You have <strong>15 minutes left today!</strong>
+                </p>
+            </div>
+
+            <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 text-left text-xs font-bold space-y-2 text-amber-900">
+                <p class="flex items-center space-x-2"><span>💡</span> <span>Finish your current question</span></p>
+                <p class="flex items-center space-x-2"><span>💾</span> <span>Save your progress</span></p>
+                <p class="flex items-center space-x-2"><span>🌙</span> <span>Take a break and come back tomorrow!</span></p>
+            </div>
+
+            <button onclick="closeModal('modal-screentime-warning')" class="w-full py-4 bg-brand-blue hover:bg-blue-600 text-white font-child font-bold text-base rounded-2xl shadow-md kid-btn-blue">
+                Keep Learning ⏱️
+            </button>
+        </div>
+    </div>
+
+    <!-- FEATURE 1: AUTO-LOGOUT AT 2 HOURS MODAL -->
+    <div id="modal-screentime-logout" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="max-w-lg w-full bg-white rounded-3xl border-4 border-rose-400 p-8 shadow-2xl text-center space-y-6 relative kid-card">
+            <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center text-5xl mx-auto shadow-md animate-wiggle">
+                😅
+            </div>
+            <div>
+                <h2 class="font-bouncy text-3xl font-extrabold text-slate-900">Oops! Play Time's Over!</h2>
+                <p class="font-child text-sm font-bold text-slate-600 mt-1">
+                    You've reached your 2-hour learning limit for today. Great job! 🎉
+                </p>
+            </div>
+
+            <div id="logout-summary-stats" class="grid grid-cols-2 gap-3 text-left">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <p class="text-xs font-bold text-amber-900 bg-amber-50 p-3 rounded-2xl border border-amber-200">
+                Come back tomorrow to continue your learning adventure! See you soon! 👋
+            </p>
+
+            <div class="space-y-2">
+                <div class="w-full py-3 bg-emerald-100 text-emerald-800 font-child font-bold rounded-2xl border border-emerald-300">
+                    ✅ Progress Saved Automatically
+                </div>
+                <button id="logout-exit-btn" onclick="logout()" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-child font-bold rounded-2xl shadow-md kid-btn-coral">
+                    Exit to Home →
+                </button>
+            </div>
+
+            <p class="text-[11px] font-bold text-slate-400">
+                Parents can extend time from their dashboard if needed.
+            </p>
+        </div>
+    </div>
+
+    <!-- FEATURE 2: STREAK HISTORY CALENDAR MODAL -->
+    <div id="modal-streak" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-lg w-full bg-white rounded-3xl border-4 border-orange-400 p-6 sm:p-8 shadow-2xl relative kid-card">
+            <button onclick="closeModal('modal-streak')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+            <div id="modal-streak-body">
+                <!-- Rendered dynamically via app.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE 4: CURRICULUM UPLOAD MODAL -->
+    <div id="modal-curriculum-upload" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-lg w-full bg-white rounded-3xl border-4 border-emerald-400 p-6 sm:p-8 shadow-2xl space-y-6 relative kid-card">
+            <button onclick="closeModal('modal-curriculum-upload')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+            
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-sm">
+                    📚
+                </div>
+                <h2 class="font-bouncy text-2xl font-extrabold text-slate-900">Upload School Curriculum</h2>
+                <p class="font-child text-xs font-bold text-slate-500">Upload syllabus specifically for <span id="curriculum-modal-child-name">Arjun</span></p>
+            </div>
+
+            <form onsubmit="handleCurriculumSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block font-child font-bold text-xs text-slate-700 uppercase tracking-wider mb-1">School Name 🏫</label>
+                    <input type="text" id="curr-school-name" required placeholder="e.g. Delhi Public School" class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 font-bold text-sm">
+                </div>
+
+                <div>
+                    <label class="block font-child font-bold text-xs text-slate-700 uppercase tracking-wider mb-1">Subjects & Key Topics (Comma separated)</label>
+                    <input type="text" id="curr-subjects-input" placeholder="e.g. Math Fractions, Science Solar System, English Grammar" class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 font-bold text-sm">
+                </div>
+
+                <!-- Drag & Drop File Simulation -->
+                <div class="border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-6 rounded-2xl text-center space-y-2 cursor-pointer hover:bg-emerald-100/50 transition-colors">
+                    <i data-lucide="upload-cloud" class="w-8 h-8 text-emerald-600 mx-auto"></i>
+                    <p class="font-child font-bold text-xs text-emerald-900">Drop Syllabus File (PDF/DOCX) or click to browse</p>
+                    <span class="text-[10px] text-slate-400 block">AI automatically extracts & aligns daily questions</span>
+                </div>
+
+                <!-- Preset Board Loader -->
+                <div class="pt-2 border-t border-slate-100">
+                    <span class="block text-[11px] font-bold text-slate-500 mb-2">Or quick load standard board curriculum:</span>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="loadBoardPresetCurriculum('CBSE')" class="py-2 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded-xl font-bold text-xs">CBSE</button>
+                        <button type="button" onclick="loadBoardPresetCurriculum('ICSE')" class="py-2 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded-xl font-bold text-xs">ICSE</button>
+                        <button type="button" onclick="loadBoardPresetCurriculum('IB')" class="py-2 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded-xl font-bold text-xs">IB Board</button>
+                        <button type="button" onclick="loadBoardPresetCurriculum('State Board')" class="py-2 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded-xl font-bold text-xs">State</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-brand-green hover:bg-emerald-600 text-white font-child font-bold text-base rounded-2xl shadow-md kid-btn-teal">
+                    Save Curriculum for Child 🚀
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FEATURE 6: STICKER REVEAL UNLOCK MODAL -->
+    <div id="modal-sticker-reveal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-3xl border-4 border-yellow-300 p-8 shadow-2xl text-center space-y-6 relative kid-card">
+            <div class="text-center space-y-2">
+                <span class="text-4xl animate-bounce">🎉</span>
+                <h2 class="font-bouncy text-3xl font-extrabold text-slate-900">Congratulations!</h2>
+                <p class="font-child text-xs font-bold text-slate-500">You completed your 10 daily questions!</p>
+            </div>
+
+            <!-- 3D Card Flip Element -->
+            <div class="perspective-1000 w-40 h-40 mx-auto">
+                <div id="sticker-flip-card-el" class="sticker-flip-card transform-style-3d relative w-full h-full">
+                    <!-- Front -->
+                    <div class="absolute inset-0 bg-gradient-to-tr from-yellow-300 to-amber-500 rounded-3xl border-4 border-white flex items-center justify-center text-6xl shadow-xl backface-hidden">
+                        <span id="sticker-reveal-card-front-emoji">❓</span>
+                    </div>
+                    <!-- Back -->
+                    <div class="absolute inset-0 bg-white rounded-3xl border-4 border-amber-300 flex items-center justify-center text-7xl shadow-xl backface-hidden rotate-y-180">
+                        <span id="sticker-reveal-emoji">🏏</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 id="sticker-reveal-name" class="font-bouncy text-2xl font-extrabold text-slate-900">Cricket Star</h3>
+                <span id="sticker-reveal-rarity" class="px-3 py-1 rounded-full bg-blue-600 text-white font-bold text-xs uppercase">RARE</span>
+                <p id="sticker-reveal-desc" class="font-child text-xs font-bold text-slate-600">Awarded for mastering fractions with cricket problems!</p>
+            </div>
+
+            <button onclick="closeModal('modal-sticker-reveal')" class="w-full py-4 bg-brand-green hover:bg-emerald-600 text-white font-child font-bold text-base rounded-2xl shadow-md kid-btn-teal">
+                ✅ Add to Collection
+            </button>
+        </div>
+    </div>
+
+    <!-- ADD CHILD MODAL -->
+    <div id="modal-add-child" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-3xl border-4 border-brand-blue p-8 shadow-2xl space-y-6 relative kid-card">
+            <button onclick="closeModal('modal-add-child')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-blue-100 text-brand-blue rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-sm">
+                    👦👧
+                </div>
+                <h2 class="font-bouncy text-2xl font-extrabold text-slate-900">Link Another Child Account</h2>
+                <p class="font-child text-xs font-bold text-slate-500">Enter student code or sign up a new sibling!</p>
+            </div>
+            <div class="space-y-3">
+                <button onclick="closeModal('modal-add-child'); showAuthStep('signup'); document.getElementById('auth-container').classList.remove('hidden');" class="w-full py-3 bg-brand-blue text-white font-child font-bold rounded-2xl">
+                    Register New Sibling →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>

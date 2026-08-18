@@ -1,0 +1,154 @@
+/* LearnWithMe Custom Styling & Animations */
+
+/* Scrollbar customization */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #FFF9E6;
+    border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #FFD166;
+    border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #F59E0B;
+}
+
+/* Playful Kid Card Effects */
+.kid-card {
+    box-shadow: 0px 8px 0px 0px rgba(0,0,0,0.08);
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.kid-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0px 12px 0px 0px rgba(0,0,0,0.12);
+}
+
+/* Playful Bouncy Buttons */
+.kid-btn-yellow {
+    box-shadow: 0px 6px 0px 0px #E6B800;
+}
+.kid-btn-yellow:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px 0px 0px #E6B800;
+}
+
+.kid-btn-teal {
+    box-shadow: 0px 6px 0px 0px #3DB3AC;
+}
+.kid-btn-teal:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px 0px 0px #3DB3AC;
+}
+
+.kid-btn-coral {
+    box-shadow: 0px 6px 0px 0px #E65252;
+}
+.kid-btn-coral:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px 0px 0px #E65252;
+}
+
+.kid-btn-blue {
+    box-shadow: 0px 6px 0px 0px #2563EB;
+}
+.kid-btn-blue:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px 0px 0px #2563EB;
+}
+
+.kid-btn-purple {
+    box-shadow: 0px 6px 0px 0px #7C3AED;
+}
+.kid-btn-purple:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px 0px 0px #7C3AED;
+}
+
+/* Animations */
+@keyframes wiggle {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+}
+.animate-wiggle {
+    animation: wiggle 2s infinite ease-in-out;
+}
+
+@keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+.animate-float {
+    animation: floatSlow 3s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.03); }
+}
+.animate-pulse-glow {
+    animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+/* Background Patterns */
+.bg-dots-pattern {
+    background-image: radial-gradient(#FFD166 2px, transparent 2px);
+    background-size: 24px 24px;
+}
+
+/* 3D Card Flip for Sticker Unlock */
+.perspective-1000 {
+    perspective: 1000px;
+}
+.transform-style-3d {
+    transform-style: preserve-3d;
+}
+.backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+.rotate-y-180 {
+    transform: rotateY(180deg);
+}
+
+.sticker-flip-card {
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.sticker-flip-card.flipped {
+    transform: rotateY(180deg);
+}
+
+/* Rarity Glow Classes */
+.rarity-common {
+    border-color: #94A3B8;
+    background: linear-gradient(135deg, #F8FAFC, #F1F5F9);
+}
+.rarity-rare {
+    border-color: #3B82F6;
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+}
+.rarity-epic {
+    border-color: #8B5CF6;
+    background: linear-gradient(135deg, #F5F3FF, #EDE9FE);
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+}
+.rarity-legendary {
+    border-color: #F59E0B;
+    background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* Confetti Burst Overlay */
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+}
