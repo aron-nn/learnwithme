@@ -1525,3 +1525,69 @@ function updatePortalButtons() {
 document.addEventListener("DOMContentLoaded", function () {
     updatePortalButtons();
 });
+// ==========================================
+// DELETE CHILD ACCOUNT
+// ==========================================
+
+function deleteActiveChild() {
+
+    // Only allow deletion from the Parent Portal
+    if (!state.parentVerified) {
+        alert("Please verify the Parent Portal first.");
+        return;
+    }
+
+    const child = getActiveChild();
+
+    if (!child) {
+        alert("No child account is currently selected.");
+        return;
+    }
+
+    // Don't allow deleting the final child account
+    const childCount = Object.keys(state.children).length;
+
+    if (childCount <= 1) {
+        alert("You cannot delete the last child account.");
+        return;
+    }
+
+    // Confirmation
+    const confirmed = confirm(
+        `Are you sure you want to delete ${child.name}'s account?\n\n` +
+        `This will remove their learning progress, stars, stickers, ` +
+        `curriculum and account information from this device.`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const childId = child.id;
+
+    // Delete the child
+    delete state.children[childId];
+
+    // Select another remaining child
+    const remainingChildren = Object.values(state.children);
+
+    if (remainingChildren.length > 0) {
+        state.activeChildId = remainingChildren[0].id;
+    } else {
+        state.activeChildId = null;
+    }
+
+    // Reset quiz state
+    currentQuizQuestion = null;
+    currentQuestionIndex = 0;
+
+    // Save changes
+    saveState();
+
+    // Refresh the interface
+    updateUI();
+
+    showToast(
+        `🗑️ ${child.name}'s account has been deleted.`
+    );
+}
