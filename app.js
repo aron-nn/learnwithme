@@ -3,7 +3,21 @@
 // ==========================================
 // DATA CATALOGS & PRESETS
 // ==========================================
+// ============================================
+// SUPABASE CONFIGURATION
+// ============================================
 
+const SUPABASE_URL =
+    'https://vruexufgamfckicfsexa.supabase.co';
+
+const SUPABASE_KEY =
+    'sb_publishable_oUAddz5n5gzhywqrYS3PwA_h9eKgCnI';
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 const GRADES = [
     { id: 'lkg', emoji: '🎒', label: 'LKG', age: '4-5 years', desc: 'Early visual learning & phonics' },
     { id: 'ukg', emoji: '🎒', label: 'UKG', age: '5-6 years', desc: 'Pre-math & word matching' },
@@ -52,129 +66,23 @@ const STICKER_SETS = [
 ];
 
 // Initial Seed Data for Multi-child Support
+// ==========================================
+// INITIAL APPLICATION STATE
+// ==========================================
+
 const INITIAL_STATE = {
-    activeChildId: 'child_arjun',
+
+    // No demo child accounts.
+    // Children will come from Supabase.
+
+    activeChildId: null,
+
     parentVerified: false,
+
     screenTimeTimerActive: true,
-    children: {
-        'child_arjun': {
-            id: 'child_arjun',
-            name: 'Arjun Sharma',
-            avatar: '👦',
-            grade: 'Class 4',
-            board: 'CBSE',
-            code: 'ARJ-2026-X8',
-            interests: ['🏏 Cricket', '🚀 Space & Rockets', '🦕 Dinosaurs'],
-            stars: 1240,
-            
-            // Screen time (seconds)
-            todayTimeSpent: 3600, // 1 hour spent
-            dailyLimit: 7200, // 2 hours limit
-            extensionsCount: 0,
-            lastWarningShown: false,
-            autoLoggedOut: false,
 
-            // Streak
-            streakDays: 5,
-            longestStreak: 23,
-            lastActiveDate: '2026-08-18',
-            streakFreezesAvailable: 1,
-            history: {
-                '2026-08-18': 'completed',
-                '2026-08-17': 'completed',
-                '2026-08-16': 'completed',
-                '2026-08-15': 'completed',
-                '2026-08-14': 'completed',
-                '2026-08-13': 'missed',
-                '2026-08-12': 'completed',
-                '2026-08-11': 'freeze'
-            },
+    children: {}
 
-            // Daily Quota
-            dailyQuota: {
-                completed: 7,
-                total: 10
-            },
-
-            // Stickers Earned
-            stickers: [
-                { id: 'stk_cricket_1', earnedDate: '2026-08-18', count: 1 },
-                { id: 'stk_cricket_3', earnedDate: '2026-08-17', count: 2 },
-                { id: 'stk_space_2', earnedDate: '2026-08-16', count: 1 },
-                { id: 'stk_space_3', earnedDate: '2026-08-15', count: 1 },
-                { id: 'stk_dino_2', earnedDate: '2026-08-14', count: 1 },
-                { id: 'stk_anim_3', earnedDate: '2026-08-12', count: 1 }
-            ],
-
-            // Curriculum
-            curriculum: {
-                hasCurriculum: true,
-                schoolName: 'Delhi Public School, R.K. Puram',
-                gradeTerm: 'Class 4 - Term 1 (2026-27)',
-                subjects: ['Mathematics (Fractions, Geometry)', 'Science (Solar System, Forces)', 'English (Grammar & Comprehension)', 'EVS (Our Environment)'],
-                lastUpdated: 'Aug 15, 2026',
-                topicsCount: 24,
-                masteredCount: 14
-            }
-        },
-
-        'child_ananya': {
-            id: 'child_ananya',
-            name: 'Ananya Sharma',
-            avatar: '👧',
-            grade: 'Class 2',
-            board: 'CBSE',
-            code: 'ANA-2026-K3',
-            interests: ['🦋 Butterflies & Insects', '🎨 Art & Drawing', '🏰 Fairy Tales & Princesses'],
-            stars: 890,
-
-            // Screen time
-            todayTimeSpent: 1800, // 30 mins spent
-            dailyLimit: 7200,
-            extensionsCount: 0,
-            lastWarningShown: false,
-            autoLoggedOut: false,
-
-            // Streak
-            streakDays: 8,
-            longestStreak: 14,
-            lastActiveDate: '2026-08-18',
-            streakFreezesAvailable: 1,
-            history: {
-                '2026-08-18': 'completed',
-                '2026-08-17': 'completed',
-                '2026-08-16': 'completed',
-                '2026-08-15': 'completed',
-                '2026-08-14': 'completed',
-                '2026-08-13': 'completed',
-                '2026-08-12': 'completed',
-                '2026-08-11': 'completed'
-            },
-
-            // Daily Quota
-            dailyQuota: {
-                completed: 4,
-                total: 10
-            },
-
-            // Stickers
-            stickers: [
-                { id: 'stk_anim_3', earnedDate: '2026-08-18', count: 2 },
-                { id: 'stk_dino_3', earnedDate: '2026-08-16', count: 1 }
-            ],
-
-            // Curriculum
-            curriculum: {
-                hasCurriculum: true,
-                schoolName: 'Delhi Public School, Primary Wing',
-                gradeTerm: 'Class 2 - Annual Syllabus',
-                subjects: ['Mathematics (Addition, Money)', 'English (Story Reading)', 'EVS (Plants & Animals)'],
-                lastUpdated: 'Aug 10, 2026',
-                topicsCount: 18,
-                masteredCount: 10
-            }
-        }
-    }
 };
 
 // Application Global State Object
@@ -212,13 +120,87 @@ function saveState() {
 // ==========================================
 // INITIALIZATION
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    initInterestSelector();
-    initScreenTimeTracker();
-    updateUI();
-    lucide.createIcons();
-    initCharts();
-});
+document.addEventListener(
+    'DOMContentLoaded',
+    async () => {
+
+        initInterestSelector();
+
+        lucide.createIcons();
+
+        initCharts();
+
+
+        // Check Supabase session
+
+        const {
+            data: {
+                session
+            }
+        } =
+            await supabaseClient
+                .auth
+                .getSession();
+
+
+        if (session) {
+
+            state.parentVerified = true;
+
+
+            await loadChildrenFromSupabase();
+
+
+            const role =
+                sessionStorage.getItem(
+                    'learnwithme_portal_role'
+                );
+
+
+            document
+                .getElementById(
+                    'auth-container'
+                )
+                .classList.add(
+                    'hidden'
+                );
+
+
+            if (role === 'kid') {
+
+                switchPortal(
+                    'kid'
+                );
+
+            } else {
+
+                switchPortal(
+                    'parent'
+                );
+
+            }
+
+
+            updatePortalButtons();
+
+            updateUI();
+
+            initScreenTimeTracker();
+
+        } else {
+
+            // No login
+
+            state.parentVerified = false;
+
+            showAuthStep(
+                'login-select'
+            );
+
+        }
+
+    }
+);
 
 function getActiveChild() {
     return state.children[state.activeChildId] || Object.values(state.children)[0];
@@ -611,58 +593,659 @@ function renderSelectedInterestTags() {
 // ==========================================
 // AUTH & SIGNUP HANDLERS
 // ==========================================
-function handleChildSignUp(e) {
-    e.preventDefault();
-    const name = document.getElementById('signup-name').value.trim();
-    const grade = document.getElementById('signup-grade').value;
-    const board = document.getElementById('signup-board').value;
+// ============================================
+// CREATE CHILD ACCOUNT
+// ============================================
+// ============================================
+// PARENT SIGNUP
+// ============================================
 
-    if (selectedSignupInterests.length === 0) {
-        showToast('⚠️ Please select at least 1 interest!');
+async function handleParentSignup(e) {
+
+    e.preventDefault();
+
+
+    const name =
+        document
+            .getElementById(
+                'parent-signup-name'
+            )
+            .value
+            .trim();
+
+
+    const email =
+        document
+            .getElementById(
+                'parent-signup-email'
+            )
+            .value
+            .trim();
+
+
+    const password =
+        document
+            .getElementById(
+                'parent-signup-password'
+            )
+            .value;
+
+
+    if (!name || !email || !password) {
+
+        showToast(
+            '⚠️ Please fill all fields.'
+        );
+
         return;
     }
 
-    const newId = 'child_' + Date.now();
-    const code = name.substring(0, 3).toUpperCase() + '-2026-' + Math.floor(10 + Math.random() * 90);
 
-    const newChild = {
-        id: newId,
-        name: name,
-        avatar: '👦',
-        grade: grade,
-        board: board,
-        code: code,
-        interests: [...selectedSignupInterests],
-        stars: 100,
-        todayTimeSpent: 0,
-        dailyLimit: 7200,
-        extensionsCount: 0,
-        lastWarningShown: false,
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.signUp({
+
+        email,
+
+        password,
+
+        options: {
+
+            data: {
+
+                full_name:
+                    name
+
+            }
+
+        }
+
+    });
+
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(
+            `❌ ${error.message}`
+        );
+
+        return;
+    }
+
+
+    if (!data.user) {
+
+        showToast(
+            '❌ Account could not be created.'
+        );
+
+        return;
+    }
+
+
+    // Create parent profile
+
+    const {
+        error: profileError
+    } = await supabaseClient
+
+        .from('parent_profiles')
+
+        .insert({
+
+            id: data.user.id,
+
+            full_name: name
+
+        });
+
+
+    if (profileError) {
+
+        console.error(
+            profileError
+        );
+
+        showToast(
+            'Account created, but profile setup failed.'
+        );
+
+        return;
+    }
+
+
+    state.parentVerified = true;
+
+
+    showToast(
+        '🎉 Parent account created!'
+    );
+
+
+    // Go to child registration
+
+    showAuthStep(
+        'signup'
+    );
+
+}
+// ============================================
+// PARENT EMAIL LOGIN
+// ============================================
+
+async function handleParentLoginEmail(e) {
+
+    e.preventDefault();
+
+
+    const email =
+        document
+            .getElementById(
+                'parent-login-email'
+            )
+            .value
+            .trim();
+
+
+    const password =
+        document
+            .getElementById(
+                'parent-login-password'
+            )
+            .value;
+
+
+    const errorElement =
+        document.getElementById(
+            'parent-email-login-error'
+        );
+
+
+    errorElement.classList.add(
+        'hidden'
+    );
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.auth
+        .signInWithPassword({
+
+            email,
+
+            password
+
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+
+        errorElement.textContent =
+            '❌ Invalid email or password.';
+
+
+        errorElement.classList.remove(
+            'hidden'
+        );
+
+
+        return;
+    }
+
+
+    state.parentVerified = true;
+
+
+    sessionStorage.setItem(
+        'learnwithme_portal_role',
+        'parent'
+    );
+
+
+    await loadChildrenFromSupabase();
+
+
+    document
+        .getElementById(
+            'auth-container'
+        )
+        .classList.add('hidden');
+
+
+    updatePortalButtons();
+
+
+    switchPortal(
+        'parent'
+    );
+
+
+    updateUI();
+
+
+    showToast(
+        '👋 Welcome back!'
+    );
+
+}
+// ============================================
+// CHILD LOGIN USING STUDENT CODE
+// ============================================
+
+async function handleChildLogin() {
+
+    const input =
+        document
+            .getElementById(
+                'child-code-input'
+            );
+
+
+    if (!input) {
+
+        console.error(
+            'child-code-input not found'
+        );
+
+        return;
+    }
+
+
+    const code =
+        input.value
+            .trim()
+            .toUpperCase();
+
+
+    if (!code) {
+
+        showToast(
+            '⚠️ Enter your student code.'
+        );
+
+        return;
+    }
+
+
+    const {
+        data: child,
+        error
+    } = await supabaseClient
+
+        .from('children')
+
+        .select('*')
+
+        .eq(
+            'student_code',
+            code
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(
+            '❌ Could not verify code.'
+        );
+
+        return;
+    }
+
+
+    if (!child) {
+
+        showToast(
+            '❌ Invalid student code.'
+        );
+
+        return;
+    }
+
+
+    state.activeChildId =
+        child.id;
+
+
+    state.children[child.id] = {
+
+        id: child.id,
+
+        name: child.name,
+
+        avatar: child.avatar,
+
+        grade: child.grade,
+
+        board: child.board,
+
+        code:
+            child.student_code,
+
+        interests:
+            child.interests || [],
+
+        stars:
+            child.stars || 0,
+
+        todayTimeSpent:
+            child.today_time_spent || 0,
+
+        dailyLimit:
+            child.daily_limit_seconds || 7200,
+
+        streakDays:
+            child.streak_days || 0,
+
+        longestStreak:
+            child.longest_streak || 0,
+
         autoLoggedOut: false,
-        streakDays: 1,
-        longestStreak: 1,
-        lastActiveDate: new Date().toISOString().split('T')[0],
-        streakFreezesAvailable: 1,
-        history: {},
-        dailyQuota: { completed: 0, total: 10 },
-        stickers: [{ id: 'stk_cricket_3', earnedDate: new Date().toISOString().split('T')[0], count: 1 }],
+
+        dailyQuota: {
+            completed: 0,
+            total: 10
+        },
+
+        stickers: [],
+
         curriculum: {
             hasCurriculum: false,
             schoolName: '',
-            gradeTerm: `${grade} Curriculum`,
+            gradeTerm:
+                `${child.grade} Curriculum`,
             subjects: [],
-            lastUpdated: 'Not uploaded'
+            lastUpdated:
+                'Not uploaded'
         }
+
     };
 
-    state.children[newId] = newChild;
-    state.activeChildId = newId;
-    saveState();
 
-    document.getElementById('generated-code-display').textContent = code;
-    showAuthStep('code-generated');
+    sessionStorage.setItem(
+        'learnwithme_portal_role',
+        'kid'
+    );
+
+
+    document
+        .getElementById(
+            'auth-container'
+        )
+        .classList.add('hidden');
+
+
+    switchPortal(
+        'kid'
+    );
+
+
+    updatePortalButtons();
+
+    updateUI();
+
+
+    showToast(
+        `👋 Welcome ${child.name}!`
+    );
+
 }
+async function handleChildSignUp(e) {
 
+    e.preventDefault();
+
+
+    // -----------------------------
+    // Get form values
+    // -----------------------------
+
+    const name =
+        document
+            .getElementById('signup-name')
+            .value
+            .trim();
+
+
+    const grade =
+        document
+            .getElementById('signup-grade')
+            .value;
+
+
+    const board =
+        document
+            .getElementById('signup-board')
+            .value;
+
+
+    // -----------------------------
+    // Validate interests
+    // -----------------------------
+
+    if (selectedSignupInterests.length === 0) {
+
+        showToast(
+            '⚠️ Please select at least 1 interest!'
+        );
+
+        return;
+    }
+
+
+    // -----------------------------
+    // Check parent login
+    // -----------------------------
+
+    const {
+        data: {
+            user
+        }
+    } = await supabaseClient
+        .auth
+        .getUser();
+
+
+    if (!user) {
+
+        showToast(
+            '⚠️ Please create a parent account first.'
+        );
+
+        showAuthStep('login-select');
+
+        return;
+    }
+
+
+    // -----------------------------
+    // Generate student code
+    // -----------------------------
+
+    const code =
+        generateStudentCode(name);
+
+
+    // -----------------------------
+    // Save child to Supabase
+    // -----------------------------
+
+    const {
+        data: child,
+        error
+    } = await supabaseClient
+
+        .from('children')
+
+        .insert({
+
+            parent_id: user.id,
+
+            name: name,
+
+            avatar: '👦',
+
+            grade: grade,
+
+            board: board,
+
+            student_code: code,
+
+            interests:
+                [...selectedSignupInterests],
+
+            stars: 100,
+
+            daily_limit_seconds: 7200,
+
+            today_time_spent: 0,
+
+            streak_days: 1,
+
+            longest_streak: 1
+
+        })
+
+        .select()
+
+        .single();
+
+
+    if (error) {
+
+        console.error(
+            'Child creation error:',
+            error
+        );
+
+        showToast(
+            '❌ Could not create child account.'
+        );
+
+        return;
+    }
+
+
+    // -----------------------------
+    // Add to frontend state
+    // -----------------------------
+
+    state.children[child.id] = {
+
+        id: child.id,
+
+        name: child.name,
+
+        avatar: child.avatar,
+
+        grade: child.grade,
+
+        board: child.board,
+
+        code: child.student_code,
+
+        interests: child.interests,
+
+        stars: child.stars,
+
+        todayTimeSpent:
+            child.today_time_spent,
+
+        dailyLimit:
+            child.daily_limit_seconds,
+
+        streakDays:
+            child.streak_days,
+
+        longestStreak:
+            child.longest_streak,
+
+        autoLoggedOut: false,
+
+        dailyQuota: {
+            completed: 0,
+            total: 10
+        },
+
+        stickers: [],
+
+        curriculum: {
+            hasCurriculum: false,
+
+            schoolName: '',
+
+            gradeTerm:
+                `${child.grade} Curriculum`,
+
+            subjects: [],
+
+            lastUpdated:
+                'Not uploaded'
+        }
+
+    };
+
+
+    state.activeChildId =
+        child.id;
+
+
+    // -----------------------------
+    // Display generated code
+    // -----------------------------
+
+    document
+        .getElementById(
+            'generated-code-display'
+        )
+        .textContent =
+        child.student_code;
+
+
+    // -----------------------------
+    // Show success screen
+    // -----------------------------
+
+    showAuthStep(
+        'code-generated'
+    );
+
+
+    showToast(
+        `🎉 ${name}'s account created!`
+    );
+}
+// ============================================
+// GENERATE UNIQUE STUDENT CODE
+// ============================================
+
+function generateStudentCode(name) {
+
+    const prefix =
+        name
+            .replace(/[^a-zA-Z]/g, '')
+            .substring(0, 3)
+            .toUpperCase();
+
+
+    const random =
+        Math.floor(
+            1000 +
+            Math.random() * 9000
+        );
+
+
+    return `${prefix}-${new Date().getFullYear()}-${random}`;
+}
 function handleParentLogin(e) {
     e.preventDefault();
     const inputCode = document.getElementById('parent-code-input').value.trim().toUpperCase();
@@ -686,6 +1269,7 @@ function handleParentLogin(e) {
     }
 }
 
+
 function loginAsChild() {
     const child = getActiveChild();
     if (child && child.autoLoggedOut) {
@@ -699,10 +1283,45 @@ function loginAsChild() {
     updateUI();
 }
 
-function logout() {
-    sessionStorage.removeItem("learnwithme_portal_role");
-    document.getElementById('auth-container').classList.remove('hidden');
-    showAuthStep('login-select');
+// ============================================
+// LOGOUT
+// ============================================
+
+async function logout() {
+
+    await supabaseClient.auth.signOut({
+        scope: 'local'
+    });
+
+
+    state.parentVerified = false;
+
+    state.activeChildId = null;
+
+
+    sessionStorage.removeItem(
+        'learnwithme_portal_role'
+    );
+
+
+    document
+        .getElementById(
+            'auth-container'
+        )
+        .classList.remove(
+            'hidden'
+        );
+
+
+    showAuthStep(
+        'login-select'
+    );
+
+
+    showToast(
+        '👋 Logged out successfully.'
+    );
+
 }
 
 // ==========================================
@@ -1069,16 +1688,237 @@ function renderStickerCollection(child) {
 // MODAL & NAVIGATION CONTROLLERS
 // ==========================================
 function showAuthStep(step) {
-    document.getElementById('auth-step-signup').classList.add('hidden');
-    document.getElementById('auth-step-code-generated').classList.add('hidden');
-    document.getElementById('auth-step-login-select').classList.add('hidden');
-    document.getElementById('auth-step-parent-code').classList.add('hidden');
 
-    if (step === 'signup') document.getElementById('auth-step-signup').classList.remove('hidden');
-    if (step === 'code-generated') document.getElementById('auth-step-code-generated').classList.remove('hidden');
-    if (step === 'login-select') document.getElementById('auth-step-login-select').classList.remove('hidden');
-    if (step === 'parent-code') document.getElementById('auth-step-parent-code').classList.remove('hidden');
+    const steps = [
+
+        'auth-step-signup',
+
+        'auth-step-code-generated',
+
+        'auth-step-login-select',
+
+        'auth-step-parent-code',
+
+        'auth-step-parent-signup',
+
+        'auth-step-parent-login'
+
+    ];
+
+
+    steps.forEach(id => {
+
+        const element =
+            document.getElementById(id);
+
+        if (element) {
+
+            element.classList.add(
+                'hidden'
+            );
+
+        }
+
+    });
+
+
+    const selected =
+        document.getElementById(
+            `auth-step-${step}`
+        );
+
+
+    if (selected) {
+
+        selected.classList.remove(
+            'hidden'
+        );
+
+    }
+
 }
+// ============================================
+// OPEN PARENT PORTAL
+// ============================================
+
+async function openParentPortal() {
+
+    const {
+        data: {
+            user
+        }
+    } = await supabaseClient.auth.getUser();
+
+
+    if (!user) {
+
+        document
+            .getElementById(
+                'auth-container'
+            )
+            .classList.remove('hidden');
+
+
+        showAuthStep(
+            'parent-login'
+        );
+
+
+        return;
+    }
+
+
+    state.parentVerified = true;
+
+
+    sessionStorage.setItem(
+        'learnwithme_portal_role',
+        'parent'
+    );
+
+
+    await loadChildrenFromSupabase();
+
+
+    switchPortal(
+        'parent'
+    );
+
+
+    updateUI();
+}
+// ============================================
+// LOAD CHILDREN FROM SUPABASE
+// ============================================
+
+async function loadChildrenFromSupabase() {
+
+    const {
+        data: {
+            user
+        }
+    } = await supabaseClient.auth.getUser();
+
+
+    if (!user) {
+
+        state.children = {};
+
+        return;
+    }
+
+
+    const {
+        data: children,
+        error
+    } = await supabaseClient
+
+        .from('children')
+
+        .select('*')
+
+        .order(
+            'created_at',
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(
+            '❌ Could not load children.'
+        );
+
+        return;
+    }
+
+
+    state.children = {};
+
+
+    children.forEach(child => {
+
+        state.children[child.id] = {
+
+            id: child.id,
+
+            name: child.name,
+
+            avatar: child.avatar,
+
+            grade: child.grade,
+
+            board: child.board,
+
+            code:
+                child.student_code,
+
+            interests:
+                child.interests || [],
+
+            stars:
+                child.stars || 0,
+
+            todayTimeSpent:
+                child.today_time_spent || 0,
+
+            dailyLimit:
+                child.daily_limit_seconds || 7200,
+
+            streakDays:
+                child.streak_days || 0,
+
+            longestStreak:
+                child.longest_streak || 0,
+
+            autoLoggedOut: false,
+
+            dailyQuota: {
+                completed: 0,
+                total: 10
+            },
+
+            stickers: [],
+
+            curriculum: {
+                hasCurriculum: false,
+                schoolName: '',
+                gradeTerm:
+                    `${child.grade} Curriculum`,
+                subjects: [],
+                lastUpdated:
+                    'Not uploaded'
+            }
+
+        };
+
+    });
+
+
+    // Select first child
+
+    const childList =
+        Object.values(
+            state.children
+        );
+
+
+    if (
+        childList.length &&
+        !state.activeChildId
+    ) {
+
+        state.activeChildId =
+            childList[0].id;
+
+    }
+
+}
+
 
 function switchPortal(portal) {
     const parentEl = document.getElementById('portal-parent');
@@ -1324,58 +2164,109 @@ function selectAISubject(subject) {
 // 3. GENERATE PERSONALIZED AI CLASS
 // ========================================================
 
-function generateAIClass(subject) {
+async function generateAIClass(subject) {
 
     const child = getActiveChild();
 
     if (!child) return;
 
 
-    // Get child's interests
     const interest =
         child.interests &&
-        child.interests.length > 0
+        child.interests.length
             ? child.interests[0]
             : 'games';
 
 
-    // Get child's class
-    const grade =
-        child.grade || 'your class';
-
-
-    // Update title
     document
         .getElementById('ai-class-title')
         .textContent =
-        `${subject} Adventure with ${interest}!`;
+        `🤖 Kiko is preparing your ${subject} adventure...`;
 
-
-    // Temporary personalized lesson
-    // This can later be replaced by your LLM API.
 
     document
         .getElementById('ai-class-content')
         .innerHTML = `
 
-            <div class="space-y-5">
+            <div class="text-center p-10">
 
+                <div class="text-6xl animate-bounce">
+                    🦉
+                </div>
+
+                <p class="mt-4 font-bold">
+                    Kiko is creating your
+                    ${subject} class...
+                </p>
+
+            </div>
+
+        `;
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.functions.invoke(
+
+            'generate-class',
+
+            {
+                body: {
+
+                    childName:
+                        child.name,
+
+                    grade:
+                        child.grade,
+
+                    subject,
+
+                    interest,
+
+                    syllabus:
+                        child.curriculum
+                            ?.subjects
+                            ?.join(', ') || ''
+
+                }
+            }
+
+        );
+
+
+        if (error) {
+
+            throw error;
+        }
+
+
+        const lesson =
+            JSON.parse(data.lesson);
+
+
+        document
+            .getElementById('ai-class-title')
+            .textContent =
+            lesson.title;
+
+
+        document
+            .getElementById('ai-class-content')
+            .innerHTML = `
+
+            <div class="space-y-5">
 
                 <div class="bg-blue-50 p-5 rounded-2xl">
 
-                    <h3 class="text-2xl font-bold mb-2">
-                        🎓 Today's Mission
+                    <h3 class="text-xl font-bold mb-2">
+                        👋 Let's Begin!
                     </h3>
 
                     <p>
-                        Welcome to your ${subject} adventure!
-                    </p>
-
-                    <p class="mt-2">
-
-                        Kiko knows that you like
-                        <strong>${interest}</strong>.
-
+                        ${lesson.introduction}
                     </p>
 
                 </div>
@@ -1384,42 +2275,95 @@ function generateAIClass(subject) {
                 <div class="bg-yellow-50 p-5 rounded-2xl">
 
                     <h3 class="text-xl font-bold mb-2">
-                        ⭐ Let's Learn
+                        📚 Learn
                     </h3>
 
                     <p>
-
-                        Today, we are going to learn
-                        <strong>${subject}</strong>
-                        using examples related to
-                        <strong>${interest}</strong>.
-
+                        ${lesson.lesson}
                     </p>
 
                 </div>
 
 
-                <div class="bg-emerald-50 p-5 rounded-2xl">
+                <div class="bg-green-50 p-5 rounded-2xl">
+
+                    <h3 class="text-xl font-bold mb-2">
+                        ✨ Examples
+                    </h3>
+
+                    <ul class="list-disc pl-5">
+
+                        ${lesson.examples
+                            .map(
+                                example =>
+                                `<li>${example}</li>`
+                            )
+                            .join('')
+                        }
+
+                    </ul>
+
+                </div>
+
+
+                <div class="bg-purple-50 p-5 rounded-2xl">
 
                     <h3 class="text-xl font-bold mb-2">
                         🧠 Your Challenge
                     </h3>
 
                     <p>
-
-                        Get ready for an interactive
-                        ${subject} challenge designed
-                        especially for ${grade} students!
-
+                        ${lesson.challenge}
                     </p>
 
                 </div>
 
 
+                <div class="bg-pink-50 p-5 rounded-2xl">
+
+                    <p class="font-bold">
+                        🌟 ${lesson.encouragement}
+                    </p>
+
+                </div>
+
             </div>
 
         `;
 
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        document
+            .getElementById('ai-class-content')
+            .innerHTML = `
+
+                <div class="text-center p-8">
+
+                    <div class="text-5xl">
+                        😕
+                    </div>
+
+                    <p class="mt-4 font-bold">
+                        Kiko couldn't prepare the
+                        lesson right now.
+                    </p>
+
+                    <button
+                        onclick="generateAIClass('${subject}')"
+                        class="mt-4 px-5 py-3 bg-blue-500 text-white rounded-xl font-bold">
+
+                        🔄 Try Again
+
+                    </button>
+
+                </div>
+
+            `;
+    }
 }
 
 
