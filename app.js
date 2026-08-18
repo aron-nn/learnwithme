@@ -1151,3 +1151,314 @@ function initCharts() {
         });
     }
 }
+/* =========================================================
+   SECURE PORTAL ACCESS
+   Add this code at the VERY BOTTOM of app (1).js
+   ========================================================= */
+
+(function () {
+
+    const PORTAL_SESSION_KEY = 'learnwithme_portal_role';
+
+    // -------------------------------------------------------
+    // Get currently logged-in role
+    // -------------------------------------------------------
+    function getPortalRole() {
+        return sessionStorage.getItem(PORTAL_SESSION_KEY);
+    }
+
+    // -------------------------------------------------------
+    // Apply portal visibility
+    // -------------------------------------------------------
+    function applyPortalSecurity() {
+
+        const role = getPortalRole();
+
+        const parentPortal = document.getElementById('portal-parent');
+        const kidPortal = document.getElementById('portal-kid');
+
+        const parentButton = document.getElementById('btn-portal-parent');
+        const kidButton = document.getElementById('btn-portal-kid');
+
+        const studentCode = document.getElementById('active-student-code');
+
+        if (!parentPortal || !kidPortal) return;
+
+        // ---------------------------------------------
+        // NO LOGIN
+        // ---------------------------------------------
+        if (!role) {
+
+            parentPortal.classList.add('hidden');
+            kidPortal.classList.add('hidden');
+
+            if (parentButton) parentButton.classList.add('hidden');
+            if (kidButton) kidButton.classList.add('hidden');
+
+            if (studentCode) {
+                studentCode.closest('div').classList.add('hidden');
+            }
+
+            return;
+        }
+
+        // ---------------------------------------------
+        // PARENT
+        // ---------------------------------------------
+        if (role === 'parent') {
+
+            parentPortal.classList.remove('hidden');
+            kidPortal.classList.add('hidden');
+
+            // Parent should NOT have access to Kid World
+            if (parentButton) parentButton.classList.remove('hidden');
+            if (kidButton) kidButton.classList.add('hidden');
+
+            // Parent can see student code
+            if (studentCode) {
+                studentCode.closest('div').classList.remove('hidden');
+            }
+
+            return;
+        }
+
+        // ---------------------------------------------
+        // CHILD
+        // ---------------------------------------------
+        if (role === 'kid') {
+
+            parentPortal.classList.add('hidden');
+            kidPortal.classList.remove('hidden');
+
+            // Child should NOT have access to Parent Portal
+            if (parentButton) parentButton.classList.add('hidden');
+            if (kidButton) kidButton.classList.remove('hidden');
+
+            // IMPORTANT:
+            // Hide student code from the child.
+            // Otherwise the child could use the code to enter
+            // the Parent Portal.
+            if (studentCode) {
+                studentCode.closest('div').classList.add('hidden');
+            }
+
+            return;
+        }
+    }
+
+
+    // -------------------------------------------------------
+    // SECURE PORTAL SWITCH
+    // -------------------------------------------------------
+    window.switchPortal = function (portal) {
+
+        const role = getPortalRole();
+
+        // Parent can ONLY access parent portal
+        if (role === 'parent' && portal !== 'parent') {
+            showToast('🔒 Parent access only.');
+            return;
+        }
+
+        // Child can ONLY access kid portal
+        if (role === 'kid' && portal !== 'kid') {
+            showToast('🎈 Kid World only!');
+            return;
+        }
+
+        // No authenticated role
+        if (!role) {
+            showToast('🔐 Please login first.');
+            return;
+        }
+
+        const parentEl = document.getElementById('portal-parent');
+        const kidEl = document.getElementById('portal-kid');
+
+        if (portal === 'parent') {
+
+            parentEl.classList.remove('hidden');
+            kidEl.classList.add('hidden');
+
+        } else if (portal === 'kid') {
+
+            parentEl.classList.add('hidden');
+            kidEl.classList.remove('hidden');
+
+        }
+
+        applyPortalSecurity();
+    };
+
+
+    // -------------------------------------------------------
+    // SECURE PARENT LOGIN
+    // -------------------------------------------------------
+    window.handleParentLogin = function (e) {
+
+        e.preventDefault();
+
+        const inputCode =
+            document.getElementById('parent-code-input')
+                .value
+                .trim()
+                .toUpperCase();
+
+        const errEl =
+            document.getElementById('parent-login-error');
+
+        const matchedChild =
+            Object.values(state.children)
+                .find(child => child.code === inputCode);
+
+        // Only valid student code can enter parent portal
+        if (
+            matchedChild ||
+            inputCode === 'ARJ-2026-X8' ||
+            inputCode === 'ANA-2026-K3'
+        ) {
+
+            errEl.classList.add('hidden');
+
+            if (matchedChild) {
+                state.activeChildId = matchedChild.id;
+            }
+
+            state.parentVerified = true;
+
+            // Save role for THIS browser tab
+            sessionStorage.setItem(
+                PORTAL_SESSION_KEY,
+                'parent'
+            );
+
+            saveState();
+
+            document
+                .getElementById('auth-container')
+                .classList.add('hidden');
+
+            applyPortalSecurity();
+
+            switchPortal('parent');
+
+            updateUI();
+
+        } else {
+
+            errEl.classList.remove('hidden');
+
+        }
+    };
+
+
+    // -------------------------------------------------------
+    // SECURE CHILD LOGIN
+    // -------------------------------------------------------
+    window.loginAsChild = function () {
+
+        const child = getActiveChild();
+
+        if (child && child.autoLoggedOut) {
+
+            alert(
+                "You've reached your 2-hour learning limit today. " +
+                "Come back tomorrow! 🌙"
+            );
+
+            return;
+        }
+
+        // Mark this browser tab as CHILD
+        sessionStorage.setItem(
+            PORTAL_SESSION_KEY,
+            'kid'
+        );
+
+        // Child is NOT parent verified
+        state.parentVerified = false;
+
+        saveState();
+
+        document
+            .getElementById('auth-container')
+            .classList.add('hidden');
+
+        applyPortalSecurity();
+
+        switchPortal('kid');
+
+        updateUI();
+    };
+
+
+    // -------------------------------------------------------
+    // SECURE LOGOUT
+    // -------------------------------------------------------
+    window.logout = function () {
+
+        // Remove role completely
+        sessionStorage.removeItem(
+            PORTAL_SESSION_KEY
+        );
+
+        state.parentVerified = false;
+
+        saveState();
+
+        // Hide both portals
+        const parentPortal =
+            document.getElementById('portal-parent');
+
+        const kidPortal =
+            document.getElementById('portal-kid');
+
+        if (parentPortal)
+            parentPortal.classList.add('hidden');
+
+        if (kidPortal)
+            kidPortal.classList.add('hidden');
+
+        // Show authentication screen
+        const auth =
+            document.getElementById('auth-container');
+
+        if (auth)
+            auth.classList.remove('hidden');
+
+        showAuthStep('login-select');
+
+        applyPortalSecurity();
+    };
+
+
+    // -------------------------------------------------------
+    // PROTECT PORTALS WHEN PAGE LOADS
+    // -------------------------------------------------------
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            // Wait until existing application
+            // initialization has finished.
+            setTimeout(function () {
+
+                applyPortalSecurity();
+
+                const role = getPortalRole();
+
+                if (role === 'parent') {
+                    switchPortal('parent');
+                }
+
+                if (role === 'kid') {
+                    switchPortal('kid');
+                }
+
+            }, 100);
+
+        }
+    );
+
+
+})();
