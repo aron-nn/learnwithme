@@ -140,6 +140,55 @@
         <!-- ========================================= -->
         <!-- PARENT LOGIN                              -->
         <!-- ========================================= -->
+    <!-- ========================================= -->
+<!-- CHILD LOGIN                               -->
+<!-- ========================================= -->
+
+    <div
+        id="auth-step-child-login"
+        class="hidden max-w-md w-full bg-white rounded-3xl border-4 border-kid-coral p-8 shadow-2xl space-y-6 relative kid-card my-auto"
+    >
+        <button
+            type="button"
+            onclick="showAuthStep('login-select')"
+            class="text-xs font-bold text-slate-400 hover:text-slate-700"
+        >
+            ← Back
+        </button>
+
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 bg-rose-100 text-kid-coral rounded-3xl flex items-center justify-center text-4xl mx-auto">
+                🎈
+            </div>
+
+            <h2 class="font-bouncy text-2xl font-extrabold text-slate-900">
+                Kid Login
+            </h2>
+
+            <p class="font-child text-xs font-bold text-slate-500">
+                Enter your student code to start learning!
+            </p>
+        </div>
+
+        <form onsubmit="handleChildLogin(event)" class="space-y-4">
+
+            <input
+                id="child-code-input"
+                type="text"
+                required
+                placeholder="e.g. ARJ-2026-X8"
+                class="w-full px-4 py-4 rounded-2xl border-2 border-slate-200 text-center font-mono text-xl uppercase tracking-widest font-extrabold focus:border-kid-coral focus:outline-none"
+            >
+
+            <button
+                type="submit"
+                class="w-full py-4 bg-kid-coral text-white font-child font-bold text-base rounded-2xl shadow-md"
+            >
+                Start Learning 🚀
+            </button>
+
+        </form>
+    </div>
 
     <div
         id="auth-step-parent-login"
@@ -293,7 +342,7 @@
             </form>
 
             <div class="text-center pt-2 border-t border-slate-100">
-                <button onclick="showAuthStep('login-select')" class="text-xs font-bold text-brand-purple hover:underline">
+                <button onclick="showAuthStep('child-login')" class="text-xs font-bold text-brand-purple hover:underline">
                     Already registered? Go to Login Screen →
                 </button>
             </div>
@@ -343,7 +392,7 @@
                 </button>
 
                 <!-- Select Child -->
-                <button onclick="showAuthStep('signup')" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-kid-coral hover:bg-rose-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card">
+                <button onclick="showAuthStep('child-login')" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-kid-coral hover:bg-rose-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card">
                     <div class="w-20 h-20 bg-rose-100 text-kid-coral rounded-3xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-sm">
                         🎈
                     </div>

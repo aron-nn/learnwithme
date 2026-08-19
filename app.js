@@ -120,87 +120,98 @@ function saveState() {
 // ==========================================
 // INITIALIZATION
 // ==========================================
-document.addEventListener(
-    'DOMContentLoaded',
-    async () => {
-
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
         initInterestSelector();
-
         lucide.createIcons();
-
         initCharts();
+        updatePortalButtons();
 
+        // Check whether a real Supabase login session exists
+        const { data, error } = await supabaseClient.auth.getSession();
 
-        // Check Supabase session
-
-        const {
-            data: {
-                session
-            }
-        } =
-            await supabaseClient
-                .auth
-                .getSession();
-
-
-        if (session) {
-
-            state.parentVerified = true;
-
-
-            await loadChildrenFromSupabase();
-
-
-            const role =
-                sessionStorage.getItem(
-                    'learnwithme_portal_role'
-                );
-
+        if (error) {
+            console.error('Session check failed:', error);
+            state.parentVerified = false;
+            sessionStorage.removeItem('learnwithme_portal_role');
 
             document
-                .getElementById(
-                    'auth-container'
-                )
-                .classList.add(
-                    'hidden'
-                );
+                .getElementById('auth-container')
+                .classList.remove('hidden');
 
-
-            if (role === 'kid') {
-
-                switchPortal(
-                    'kid'
-                );
-
-            } else {
-
-                switchPortal(
-                    'parent'
-                );
-
-            }
-
-
-            updatePortalButtons();
-
-            updateUI();
-
-            initScreenTimeTracker();
-
-        } else {
-
-            // No login
-
-            state.parentVerified = false;
-
-            showAuthStep(
-                'login-select'
-            );
-
+            showAuthStep('login-select');
+            return;
         }
 
+        const session = data?.session;
+
+        // No authenticated user
+        if (!session?.user) {
+            state.parentVerified = false;
+            state.activeChildId = null;
+
+            sessionStorage.removeItem('learnwithme_portal_role');
+
+            document
+                .getElementById('auth-container')
+                .classList.remove('hidden');
+
+            showAuthStep('login-select');
+            return;
+        }
+
+        // We have a valid Supabase session
+        state.parentVerified = true;
+
+        const role =
+            sessionStorage.getItem('learnwithme_portal_role') || 'parent';
+
+        await loadChildrenFromSupabase();
+
+        // If the parent has no accessible children, don't pretend
+        // that login is complete.
+        const children = Object.values(state.children);
+
+        if (children.length === 0) {
+            console.warn('Logged in, but no children were found.');
+
+            document
+                .getElementById('auth-container')
+                .classList.remove('hidden');
+
+            showAuthStep('login-select');
+            return;
+        }
+
+        document
+            .getElementById('auth-container')
+            .classList.add('hidden');
+
+        if (role === 'kid') {
+            switchPortal('kid');
+        } else {
+            switchPortal('parent');
+        }
+
+        updatePortalButtons();
+        updateUI();
+        initScreenTimeTracker();
+
+    } catch (err) {
+        console.error('Application initialization failed:', err);
+
+        state.parentVerified = false;
+        state.activeChildId = null;
+
+        sessionStorage.removeItem('learnwithme_portal_role');
+
+        document
+            .getElementById('auth-container')
+            .classList.remove('hidden');
+
+        showAuthStep('login-select');
     }
-);
+});
 
 function getActiveChild() {
     return state.children[state.activeChildId] || Object.values(state.children)[0];
@@ -737,277 +748,167 @@ async function handleParentSignup(e) {
 // ============================================
 
 async function handleParentLoginEmail(e) {
-
     e.preventDefault();
 
-    // --------------------------------
-    // Get parent login details
-    // --------------------------------
+    const email = document
+        .getElementById('parent-login-email')
+        .value
+        .trim();
 
-    const email =
-        document
-            .getElementById('parent-login-email')
-            .value
-            .trim();
+    const password = document
+        .getElementById('parent-login-password')
+        .value;
 
-    const password =
-        document
-            .getElementById('parent-login-password')
-            .value;
+    const childCode = document
+        .getElementById('parent-login-child-code')
+        .value
+        .trim()
+        .toUpperCase();
 
-    const childCode =
-        document
-            .getElementById('parent-login-child-code')
-            .value
-            .trim()
-            .toUpperCase();
-
-    const errorElement =
-        document.getElementById(
-            'parent-email-login-error'
-        );
+    const errorElement = document.getElementById(
+        'parent-email-login-error'
+    );
 
     errorElement.classList.add('hidden');
+    errorElement.textContent = '';
 
-
-    // --------------------------------
-    // Validate child code
-    // --------------------------------
-
-    if (!childCode) {
-
+    if (!email || !password || !childCode) {
         errorElement.textContent =
-            '⚠️ Please enter your child\'s student code.';
+            '⚠️ Please enter email, password and your child\'s student code.';
 
         errorElement.classList.remove('hidden');
-
         return;
     }
 
-
-    // --------------------------------
-    // Login parent with Supabase
-    // --------------------------------
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth
-            .signInWithPassword({
-
-                email: email,
-
-                password: password
-
+    try {
+        // -----------------------------------------
+        // STEP 1: Authenticate parent
+        // -----------------------------------------
+        const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+                email,
+                password
             });
 
+        if (error || !data?.user) {
+            console.error('Parent login error:', error);
 
-    if (error) {
+            errorElement.textContent =
+                '❌ Invalid email or password.';
 
-        console.error(
-            'Parent login error:',
-            error
-        );
-
-        errorElement.textContent =
-            '❌ Invalid email or password.';
-
-        errorElement.classList.remove(
-            'hidden'
-        );
-
-        return;
-    }
-
-
-    // --------------------------------
-    // Find the child
-    // --------------------------------
-
-    const {
-        data: child,
-        error: childError
-    } =
-        await supabaseClient
-            .from('children')
-            .select('*')
-            .eq(
-                'student_code',
-                childCode
-            )
-            .maybeSingle();
-
-
-    if (childError) {
-
-        console.error(
-            'Child lookup error:',
-            childError
-        );
-
-        errorElement.textContent =
-            '❌ Could not verify the child code.';
-
-        errorElement.classList.remove(
-            'hidden'
-        );
-
-        return;
-    }
-
-
-    if (!child) {
-
-        errorElement.textContent =
-            '❌ Invalid student code.';
-
-        errorElement.classList.remove(
-            'hidden'
-        );
-
-        return;
-    }
-
-
-    // --------------------------------
-    // Make sure this child belongs
-    // to the logged-in parent
-    // --------------------------------
-
-    const loggedInParent =
-        data.user.id;
-
-
-    if (
-        child.parent_id !==
-        loggedInParent
-    ) {
-
-        errorElement.textContent =
-            '❌ This child code does not belong to your account.';
-
-        errorElement.classList.remove(
-            'hidden'
-        );
-
-        return;
-    }
-
-
-    // --------------------------------
-    // Save child into application state
-    // --------------------------------
-
-    state.activeChildId =
-        child.id;
-
-    state.parentVerified =
-        true;
-
-
-    state.children[child.id] = {
-
-        id: child.id,
-
-        name: child.name,
-
-        avatar: child.avatar,
-
-        grade: child.grade,
-
-        board: child.board,
-
-        code: child.student_code,
-
-        interests:
-            child.interests || [],
-
-        stars:
-            child.stars || 0,
-
-        todayTimeSpent:
-            child.today_time_spent || 0,
-
-        dailyLimit:
-            child.daily_limit_seconds ||
-            7200,
-
-        streakDays:
-            child.streak_days || 0,
-
-        longestStreak:
-            child.longest_streak || 0,
-
-        autoLoggedOut: false,
-
-        dailyQuota: {
-
-            completed: 0,
-
-            total: 10
-
-        },
-
-        stickers: [],
-
-        curriculum: {
-
-            hasCurriculum: false,
-
-            schoolName: '',
-
-            gradeTerm:
-                `${child.grade} Curriculum`,
-
-            subjects: [],
-
-            lastUpdated:
-                'Not uploaded'
-
+            errorElement.classList.remove('hidden');
+            return;
         }
 
-    };
+        const parentId = data.user.id;
 
+        // -----------------------------------------
+        // STEP 2: Find child belonging to this parent
+        // -----------------------------------------
+        const {
+            data: child,
+            error: childError
+        } = await supabaseClient
+            .from('children')
+            .select('*')
+            .eq('student_code', childCode)
+            .eq('parent_id', parentId)
+            .maybeSingle();
 
-    // --------------------------------
-    // Save role
-    // --------------------------------
+        if (childError) {
+            console.error('Child lookup error:', childError);
 
-    sessionStorage.setItem(
-        'learnwithme_portal_role',
-        'parent'
-    );
+            errorElement.textContent =
+                '❌ Could not verify the child code.';
 
+            errorElement.classList.remove('hidden');
+            return;
+        }
 
-    // --------------------------------
-    // Hide authentication
-    // --------------------------------
+        if (!child) {
+            errorElement.textContent =
+                '❌ This child code does not belong to this parent account.';
 
-    document
-        .getElementById(
-            'auth-container'
-        )
-        .classList.add('hidden');
+            errorElement.classList.remove('hidden');
+            return;
+        }
 
+        // -----------------------------------------
+        // STEP 3: Store child in application state
+        // -----------------------------------------
+        state.activeChildId = child.id;
+        state.parentVerified = true;
 
-    // --------------------------------
-    // Open Parent Portal
-    // --------------------------------
+        state.children[child.id] = {
+            id: child.id,
+            name: child.name,
+            avatar: child.avatar || '👦',
+            grade: child.grade,
+            board: child.board,
+            code: child.student_code,
+            interests: child.interests || [],
+            stars: child.stars || 0,
+            todayTimeSpent: child.today_time_spent || 0,
+            dailyLimit: child.daily_limit_seconds || 7200,
+            streakDays: child.streak_days || 0,
+            longestStreak: child.longest_streak || 0,
+            autoLoggedOut: false,
 
-    switchPortal(
-        'parent'
-    );
+            dailyQuota: {
+                completed: 0,
+                total: 10
+            },
 
-    updatePortalButtons();
+            stickers: [],
 
-    updateUI();
+            curriculum: {
+                hasCurriculum: false,
+                schoolName: '',
+                gradeTerm: `${child.grade} Curriculum`,
+                subjects: [],
+                lastUpdated: 'Not uploaded'
+            }
+        };
 
+        // -----------------------------------------
+        // STEP 4: Save role
+        // -----------------------------------------
+        sessionStorage.setItem(
+            'learnwithme_portal_role',
+            'parent'
+        );
 
-    showToast(
-        `👋 Welcome! Managing ${child.name}'s learning.`
-    );
+        // -----------------------------------------
+        // STEP 5: Close authentication screen
+        // -----------------------------------------
+        const authContainer =
+            document.getElementById('auth-container');
 
+        if (authContainer) {
+            authContainer.classList.add('hidden');
+        }
+
+        // -----------------------------------------
+        // STEP 6: Open parent portal
+        // -----------------------------------------
+        switchPortal('parent');
+
+        updatePortalButtons();
+        updateUI();
+        initScreenTimeTracker();
+
+        showToast(
+            `👋 Welcome! Managing ${child.name}'s learning.`
+        );
+
+    } catch (err) {
+        console.error('Unexpected parent login error:', err);
+
+        errorElement.textContent =
+            '❌ Something went wrong while logging in. Please try again.';
+
+        errorElement.classList.remove('hidden');
+    }
 }
 
 
@@ -1422,28 +1323,7 @@ function generateStudentCode(name) {
 
     return `${prefix}-${new Date().getFullYear()}-${random}`;
 }
-function handleParentLogin(e) {
-    e.preventDefault();
-    const inputCode = document.getElementById('parent-code-input').value.trim().toUpperCase();
-    const errEl = document.getElementById('parent-login-error');
 
-    const matchedChild = Object.values(state.children).find(c => c.code === inputCode);
-
-    if (matchedChild || inputCode === 'ARJ-2026-X8' || inputCode === 'ANA-2026-K3') {
-        errEl.classList.add('hidden');
-        if (matchedChild) state.activeChildId = matchedChild.id;
-        state.parentVerified = true;
-        sessionStorage.setItem("learnwithme_portal_role", "parent");
-        updatePortalButtons();
-        saveState();
-
-        document.getElementById('auth-container').classList.add('hidden');
-        switchPortal('parent');
-        updateUI();
-    } else {
-        errEl.classList.remove('hidden');
-    }
-}
 
 
 function loginAsChild() {
@@ -1866,20 +1746,14 @@ function renderStickerCollection(child) {
 function showAuthStep(step) {
 
     const steps = [
-
-        'auth-step-signup',
-
-        'auth-step-code-generated',
-
-        'auth-step-login-select',
-
-        'auth-step-parent-code',
-
-        'auth-step-parent-signup',
-
-        'auth-step-parent-login'
-
-    ];
+    'auth-step-signup',
+    'auth-step-code-generated',
+    'auth-step-login-select',
+    'auth-step-parent-code',
+    'auth-step-parent-signup',
+    'auth-step-parent-login',
+    'auth-step-child-login'
+];
 
 
     steps.forEach(id => {
