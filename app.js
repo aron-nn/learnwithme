@@ -2601,3 +2601,4 @@ function deleteActiveChild() {
         `🗑️ ${child.name}'s account has been deleted.`
     );
 }
+
