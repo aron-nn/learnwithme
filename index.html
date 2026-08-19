@@ -157,7 +157,7 @@
             </h2>
 
             <p class="font-child text-xs font-bold text-slate-500">
-                Login to manage your children.
+                 Enter your details and your child's student code.
             </p>
 
         </div>
@@ -183,8 +183,14 @@
                 required
                 placeholder="Password"
                 class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-brand-blue focus:outline-none"
-        >
-
+        >   
+            <input
+                id="parent-login-child-code"
+                type="text"
+                required
+                placeholder="Child's Student Code e.g. RIT-2026-1234"
+                class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-brand-blue focus:outline-none text-center font-mono uppercase tracking-widest"
+            >
 
             <div
                 id="parent-email-login-error"
@@ -325,25 +331,25 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <!-- Select Parent -->
-                <button onclick="showAuthStep('parent-code')" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-brand-blue hover:bg-blue-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card">
+                <button onclick="showAuthStep('parent-login')" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-brand-blue hover:bg-blue-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card">
                     <div class="w-20 h-20 bg-blue-100 text-brand-blue rounded-3xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-sm">
                         👨‍👩‍👧
                     </div>
                     <div>
                         <h3 class="font-child font-extrabold text-xl text-slate-900">Parent Login</h3>
-                        <p class="text-xs font-bold text-slate-400 mt-1">Requires Student Code</p>
+                        <p class="text-xs font-bold text-slate-400 mt-1">Email + Password + Child Code</p>
                     </div>
                     <span class="px-4 py-1.5 rounded-xl bg-blue-100 text-brand-blue text-xs font-bold">Enter Code →</span>
                 </button>
 
                 <!-- Select Child -->
-                <button onclick="loginAsChild()" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-kid-coral hover:bg-rose-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card">
+                <button onclick="showAuthStep('signup')" class="p-6 rounded-3xl border-4 border-slate-100 hover:border-kid-coral hover:bg-rose-50/50 transition-all flex flex-col items-center text-center space-y-3 group kid-card"></button>
                     <div class="w-20 h-20 bg-rose-100 text-kid-coral rounded-3xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-sm">
                         🎈
                     </div>
                     <div>
                         <h3 class="font-child font-extrabold text-xl text-slate-900">Kid World!</h3>
-                        <p class="text-xs font-bold text-slate-400 mt-1">Direct Kid Play Access</p>
+                        <p class="text-xs font-bold text-slate-400 mt-1">Set up your learning profile</p>
                     </div>
                     <span class="px-4 py-1.5 rounded-xl bg-rose-100 text-kid-coral text-xs font-bold">Start Learning →</span>
                 </button>

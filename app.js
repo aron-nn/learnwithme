@@ -740,68 +740,239 @@ async function handleParentLoginEmail(e) {
 
     e.preventDefault();
 
+    // --------------------------------
+    // Get parent login details
+    // --------------------------------
 
     const email =
         document
-            .getElementById(
-                'parent-login-email'
-            )
+            .getElementById('parent-login-email')
             .value
             .trim();
 
-
     const password =
         document
-            .getElementById(
-                'parent-login-password'
-            )
+            .getElementById('parent-login-password')
             .value;
 
+    const childCode =
+        document
+            .getElementById('parent-login-child-code')
+            .value
+            .trim()
+            .toUpperCase();
 
     const errorElement =
         document.getElementById(
             'parent-email-login-error'
         );
 
-
-    errorElement.classList.add(
-        'hidden'
-    );
+    errorElement.classList.add('hidden');
 
 
-    const {
-        data,
-        error
-    } = await supabaseClient.auth
-        .signInWithPassword({
+    // --------------------------------
+    // Validate child code
+    // --------------------------------
 
-            email,
-
-            password
-
-        });
-
-
-    if (error) {
-
-        console.error(error);
-
+    if (!childCode) {
 
         errorElement.textContent =
-            '❌ Invalid email or password.';
+            '⚠️ Please enter your child\'s student code.';
 
-
-        errorElement.classList.remove(
-            'hidden'
-        );
-
+        errorElement.classList.remove('hidden');
 
         return;
     }
 
 
-    state.parentVerified = true;
+    // --------------------------------
+    // Login parent with Supabase
+    // --------------------------------
 
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth
+            .signInWithPassword({
+
+                email: email,
+
+                password: password
+
+            });
+
+
+    if (error) {
+
+        console.error(
+            'Parent login error:',
+            error
+        );
+
+        errorElement.textContent =
+            '❌ Invalid email or password.';
+
+        errorElement.classList.remove(
+            'hidden'
+        );
+
+        return;
+    }
+
+
+    // --------------------------------
+    // Find the child
+    // --------------------------------
+
+    const {
+        data: child,
+        error: childError
+    } =
+        await supabaseClient
+            .from('children')
+            .select('*')
+            .eq(
+                'student_code',
+                childCode
+            )
+            .maybeSingle();
+
+
+    if (childError) {
+
+        console.error(
+            'Child lookup error:',
+            childError
+        );
+
+        errorElement.textContent =
+            '❌ Could not verify the child code.';
+
+        errorElement.classList.remove(
+            'hidden'
+        );
+
+        return;
+    }
+
+
+    if (!child) {
+
+        errorElement.textContent =
+            '❌ Invalid student code.';
+
+        errorElement.classList.remove(
+            'hidden'
+        );
+
+        return;
+    }
+
+
+    // --------------------------------
+    // Make sure this child belongs
+    // to the logged-in parent
+    // --------------------------------
+
+    const loggedInParent =
+        data.user.id;
+
+
+    if (
+        child.parent_id !==
+        loggedInParent
+    ) {
+
+        errorElement.textContent =
+            '❌ This child code does not belong to your account.';
+
+        errorElement.classList.remove(
+            'hidden'
+        );
+
+        return;
+    }
+
+
+    // --------------------------------
+    // Save child into application state
+    // --------------------------------
+
+    state.activeChildId =
+        child.id;
+
+    state.parentVerified =
+        true;
+
+
+    state.children[child.id] = {
+
+        id: child.id,
+
+        name: child.name,
+
+        avatar: child.avatar,
+
+        grade: child.grade,
+
+        board: child.board,
+
+        code: child.student_code,
+
+        interests:
+            child.interests || [],
+
+        stars:
+            child.stars || 0,
+
+        todayTimeSpent:
+            child.today_time_spent || 0,
+
+        dailyLimit:
+            child.daily_limit_seconds ||
+            7200,
+
+        streakDays:
+            child.streak_days || 0,
+
+        longestStreak:
+            child.longest_streak || 0,
+
+        autoLoggedOut: false,
+
+        dailyQuota: {
+
+            completed: 0,
+
+            total: 10
+
+        },
+
+        stickers: [],
+
+        curriculum: {
+
+            hasCurriculum: false,
+
+            schoolName: '',
+
+            gradeTerm:
+                `${child.grade} Curriculum`,
+
+            subjects: [],
+
+            lastUpdated:
+                'Not uploaded'
+
+        }
+
+    };
+
+
+    // --------------------------------
+    // Save role
+    // --------------------------------
 
     sessionStorage.setItem(
         'learnwithme_portal_role',
@@ -809,8 +980,9 @@ async function handleParentLoginEmail(e) {
     );
 
 
-    await loadChildrenFromSupabase();
-
+    // --------------------------------
+    // Hide authentication
+    // --------------------------------
 
     document
         .getElementById(
@@ -819,20 +991,24 @@ async function handleParentLoginEmail(e) {
         .classList.add('hidden');
 
 
-    updatePortalButtons();
-
+    // --------------------------------
+    // Open Parent Portal
+    // --------------------------------
 
     switchPortal(
         'parent'
     );
 
+    updatePortalButtons();
 
     updateUI();
 
 
     showToast(
-        '👋 Welcome back!'
+        `👋 Welcome! Managing ${child.name}'s learning.`
     );
+
+}
 
 }
 // ============================================
