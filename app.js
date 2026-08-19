@@ -1010,7 +1010,7 @@ async function handleParentLoginEmail(e) {
 
 }
 
-}
+
 // ============================================
 // CHILD LOGIN USING STUDENT CODE
 // ============================================
@@ -2405,7 +2405,7 @@ async function generateAIClass(subject) {
                             ?.join(', ') || ''
                 }
             }
-    );
+    
 
 
         if (error) {
